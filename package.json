@@ -1,0 +1,26 @@
+{
+  "name": "bundler",
+  "version": "0.0.1",
+  "description": "A file dependency tree parser.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuintun/bundler.git"
+  },
+  "keywords": ["bundler"],
+  "author": {
+    "name": "nuintun",
+    "email": "nuintun@qq.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nuintun/bundler/issues"
+  },
+  "homepage": "https://github.com/nuintun/bundler#readme"
+}
