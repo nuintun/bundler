@@ -41,7 +41,7 @@ rollup
         banner: banner
       })
       .then(function(result) {
-        const output = 'dist/index.js';
+        const output = 'dist/bundler.js';
 
         fs.writeFileSync(output, result.code);
         console.log(`  Build ${output} success!`);

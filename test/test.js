@@ -4,7 +4,7 @@
  * @version 2018/01/26
  */
 
-const Bundler = require('./dist/index');
+const Bundler = require('../dist/bundler');
 
 const files = {
   1: { dependencies: ['2', '3'] },

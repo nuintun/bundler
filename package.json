@@ -2,7 +2,7 @@
   "name": "bundler",
   "version": "0.0.1",
   "description": "A file dependency tree parser.",
-  "main": "index.js",
+  "main": "dist/bundler.js",
   "directories": {
     "lib": "lib"
   },
@@ -25,5 +25,8 @@
   "homepage": "https://github.com/nuintun/bundler#readme",
   "devDependencies": {
     "rollup": "^0.55.1"
+  },
+  "scripts": {
+    "test": "node test/test.js"
   }
 }
