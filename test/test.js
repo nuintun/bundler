@@ -13,7 +13,7 @@ const files = {
   4: { dependencies: ['7'] },
   5: { dependencies: [] },
   6: { dependencies: [] },
-  7: { dependencies: [1] }
+  7: { dependencies: [] }
 };
 
 async function test(params) {
