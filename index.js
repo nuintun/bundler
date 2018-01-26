@@ -5,6 +5,7 @@
  */
 
 import Visitor from './lib/visitor';
+import { unique } from './lib/utils';
 
 /**
  * @class Bundler
@@ -24,7 +25,7 @@ export default class Bundler {
    */
   bundle(options) {
     return new Promise(async resolve => {
-      resolve(await new Visitor(options));
+      resolve(unique(await new Visitor(options)));
     });
   }
 }

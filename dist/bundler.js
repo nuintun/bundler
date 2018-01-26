@@ -24,8 +24,9 @@ class File {
    * @param {string} path
    * @param {any} data
    */
-  constructor(path, data = null) {
+  constructor(path, dependencies = [], data = null) {
     this.path = path;
+    this.dependencies = dependencies;
     this.data = data;
   }
 }
@@ -50,6 +51,25 @@ function flatten(array) {
 }
 
 /**
+ * @function function
+ * @param {Array} array
+ * @returns {Array}
+ */
+function unique(array) {
+  const cached = new Set();
+
+  return array.filter(file => {
+    const path = file.path;
+
+    if (cached.has(path)) return false;
+
+    cached.add(path);
+
+    return true;
+  });
+}
+
+/**
  * @module visitor
  * @license MIT
  * @version 2018/01/25
@@ -64,7 +84,7 @@ class Visitor {
    * @param {Object} options
    */
   constructor(options = {}) {
-    this.visited = new Set();
+    this.visited = new Map();
 
     return this.traverse(options.input, options);
   }
@@ -79,27 +99,29 @@ class Visitor {
     return new Promise(async resolve => {
       const path = String(await options.resolve(String(input), referer));
 
-      if (!this.visited.has(path)) {
-        this.visited.add(path);
+      // If visited resolved cached file
+      if (this.visited.has(path)) return resolve(this.visited.get(path));
 
-        const meta = (await options.parse(path)) || {};
-        const dependencies = meta.dependencies;
-        const file = new File(path, meta.data);
+      const meta = (await options.parse(path)) || {};
+      const dependencies = meta.dependencies;
+      const file = new File(path, dependencies, meta.data);
 
-        if (Array.isArray(dependencies) && dependencies.length) {
-          const bundler = flatten(
-            await Promise.all(dependencies.map(dependency => this.traverse(dependency, options, path)))
-          );
+      // Set visited
+      this.visited.set(path, file);
 
-          bundler.push(file);
+      // Traverse dependencies
+      if (Array.isArray(dependencies) && dependencies.length) {
+        const bundler = flatten(
+          await Promise.all(dependencies.map(dependency => this.traverse(dependency, options, path)))
+        );
 
-          return resolve(bundler);
-        }
+        bundler.push(file);
 
-        return resolve(file);
+        return resolve(bundler);
       }
 
-      resolve();
+      // Resolved
+      resolve(file);
     });
   }
 }
@@ -128,7 +150,7 @@ class Bundler {
    */
   bundle(options) {
     return new Promise(async resolve => {
-      resolve(await new Visitor(options));
+      resolve(unique(await new Visitor(options)));
     });
   }
 }
