@@ -4,22 +4,16 @@
  * @version 2018/01/25
  */
 
-import Visitor from './lib/Visitor';
+import Visitor from './lib/visitor';
 
 export default class Bundler {
-  constructor(options) {
+  constructor(options = {}) {
     return this.bundle(options);
   }
 
   bundle(options) {
-    return new Promise(async (resolve, reject) => {
-      const visitor = new Visitor(options);
-
-      try {
-        resolve(await visitor.traverse());
-      } catch (error) {
-        reject(error);
-      }
+    return new Promise(async resolve => {
+      resolve(await new Visitor(options));
     });
   }
 }

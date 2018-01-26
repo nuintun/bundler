@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/nuintun/bundler/issues"
   },
-  "homepage": "https://github.com/nuintun/bundler#readme"
+  "homepage": "https://github.com/nuintun/bundler#readme",
+  "devDependencies": {
+    "rollup": "^0.55.1"
+  }
 }

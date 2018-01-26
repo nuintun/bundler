@@ -1,10 +1,32 @@
 /**
- * @module visitor
+ * @module bundler
+ * @author nuintun
+ * @license MIT
+ * @version 0.0.1
+ * @description A file dependency tree parser.
+ * @see https://github.com/nuintun/bundler#readme
+ */
+
+'use strict';
+
+/**
+ * @module file
  * @license MIT
  * @version 2018/01/25
  */
 
-import File from './file';
+class File {
+  constructor(path, data = null) {
+    this.path = path;
+    this.data = data;
+  }
+}
+
+/**
+ * @module visitor
+ * @license MIT
+ * @version 2018/01/25
+ */
 
 function unzip(array) {
   let set = [];
@@ -22,7 +44,7 @@ function unzip(array) {
   return set;
 }
 
-export default class Visitor {
+class Visitor {
   constructor(options = {}) {
     this.visited = new Set();
 
@@ -56,3 +78,23 @@ export default class Visitor {
     });
   }
 }
+
+/**
+ * @module index
+ * @license MIT
+ * @version 2018/01/25
+ */
+
+class Bundler {
+  constructor(options = {}) {
+    return this.bundle(options);
+  }
+
+  bundle(options) {
+    return new Promise(async resolve => {
+      resolve(await new Visitor(options));
+    });
+  }
+}
+
+module.exports = Bundler;
