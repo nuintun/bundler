@@ -71,13 +71,13 @@ function unique(array) {
 }
 
 /**
- * @function circle
+ * @function cycle
  * @param {string} path
  * @param {string} referers
  * @param {Map} visited
  * @returns {boolean}
  */
-function circle(path, referer, visited) {
+function cycle(path, referer, visited) {
   if (path === referer) return true;
 
   const referers = visited.get(referer).referers;
@@ -85,7 +85,7 @@ function circle(path, referer, visited) {
   if (referers.has(path)) return true;
 
   for (let referer of referers) {
-    if (circle(path, referer, visited)) return true;
+    if (cycle(path, referer, visited)) return true;
   }
 
   return false;
@@ -125,8 +125,8 @@ class Visitor {
       if (this.visited.has(path)) {
         const cached = this.visited.get(path);
 
-        if (!options.circle) {
-          if (circle(path, referer, this.visited)) {
+        if (!options.cycle) {
+          if (cycle(path, referer, this.visited)) {
             throw new ReferenceError(`Found circularly dependency ${path} at ${referer}.`);
           }
 
@@ -141,7 +141,7 @@ class Visitor {
       const file = new File(path, dependencies, meta.contents);
 
       // Set visited
-      if (!options.circle) {
+      if (!options.cycle) {
         const referers = new Set();
 
         referer && referers.add(referer);
