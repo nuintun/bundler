@@ -22,12 +22,13 @@ class File {
   /**
    * @constructor
    * @param {string} path
-   * @param {any} data
+   * @param {Array} dependencies
+   * @param {any} contents
    */
-  constructor(path, dependencies = [], data = null) {
+  constructor(path, dependencies = [], contents = null) {
     this.path = path;
     this.dependencies = dependencies;
-    this.data = data;
+    this.contents = contents;
   }
 }
 
@@ -137,7 +138,7 @@ class Visitor {
 
       const meta = (await options.parse(path)) || {};
       const dependencies = meta.dependencies;
-      const file = new File(path, dependencies, meta.data);
+      const file = new File(path, dependencies, meta.contents);
 
       // Set visited
       if (!options.circle) {
