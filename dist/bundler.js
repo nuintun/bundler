@@ -74,6 +74,7 @@ function unique(array) {
  * @param {string} path
  * @param {string} referers
  * @param {Map} visited
+ * @returns {boolean}
  */
 function circle(path, referer, visited) {
   if (path === referer) return true;
