@@ -1,7 +1,7 @@
 {
   "name": "bundler",
   "version": "0.0.1",
-  "description": "A file dependency tree parser.",
+  "description": "A file dependency bundle parser.",
   "main": "dist/bundler.js",
   "directories": {
     "lib": "lib"

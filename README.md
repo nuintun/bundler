@@ -1,2 +1,3 @@
 # bundler
-A file dependency tree parser
+
+A file dependency bundle parser
