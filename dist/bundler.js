@@ -117,55 +117,60 @@ class Visitor {
    * @returns {Primise}
    */
   traverse(input, options, referer) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const path = String(await options.resolve(String(input), referer));
+    const main = async () => {
+      const path = String(await options.resolve(String(input), referer));
 
-        // If visited resolved cached file
-        if (this.visited.has(path)) {
-          const cached = this.visited.get(path);
+      // If visited return cached file
+      if (this.visited.has(path)) {
+        const cached = this.visited.get(path);
 
-          if (!options.circle) {
-            if (circle(path, referer, this.visited)) {
-              return reject(new ReferenceError(`Found circularly dependency ${path} at ${referer}.`));
-            }
-
-            cached.referers.add(referer);
+        if (!options.circle) {
+          if (circle(path, referer, this.visited)) {
+            throw new ReferenceError(`Found circularly dependency ${path} at ${referer}.`);
           }
 
-          return resolve(cached.file);
+          cached.referers.add(referer);
         }
 
-        const meta = (await options.parse(path)) || {};
-        const dependencies = meta.dependencies;
-        const file = new File(path, dependencies, meta.data);
+        return cached.file;
+      }
 
-        // Set visited
-        if (!options.circle) {
-          const referers = new Set();
+      const meta = (await options.parse(path)) || {};
+      const dependencies = meta.dependencies;
+      const file = new File(path, dependencies, meta.data);
 
-          referer && referers.add(referer);
+      // Set visited
+      if (!options.circle) {
+        const referers = new Set();
 
-          this.visited.set(path, { referers, file });
-        } else {
-          this.visited.set(path, { file });
-        }
+        referer && referers.add(referer);
 
-        // Traverse dependencies
-        if (Array.isArray(dependencies) && dependencies.length) {
-          const bundle = flatten(
-            await Promise.all(dependencies.map(dependency => this.traverse(dependency, options, path)))
-          );
+        this.visited.set(path, { referers, file });
+      } else {
+        this.visited.set(path, { file });
+      }
 
-          // Put file at last
-          bundle.push(file);
+      // Traverse dependencies
+      if (Array.isArray(dependencies) && dependencies.length) {
+        const bundle = flatten(
+          await Promise.all(dependencies.map(dependency => this.traverse(dependency, options, path)))
+        );
 
-          // Resolved
-          return resolve(bundle);
-        }
+        // Put file at last
+        bundle.push(file);
 
-        // Resolved
-        resolve(file);
+        // Returned
+        return bundle;
+      }
+
+      // Returned
+      return file;
+    };
+
+    // Returned promise
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(main());
       } catch (error) {
         reject(error);
       }
@@ -196,9 +201,12 @@ class Bundler {
    * @param {Object} options
    */
   bundle(options) {
-    return new Promise(async (resolve, reject) => {
+    const main = async () => unique(await new Visitor(options));
+
+    // Returned promise
+    return new Promise((resolve, reject) => {
       try {
-        resolve(unique(await new Visitor(options)));
+        resolve(main());
       } catch (error) {
         return reject(error);
       }
