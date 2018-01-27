@@ -3,7 +3,7 @@
  * @author nuintun
  * @license MIT
  * @version 0.0.1
- * @description A file dependency tree parser.
+ * @description A file dependency bundle parser.
  * @see https://github.com/nuintun/bundler#readme
  */
 
