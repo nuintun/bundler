@@ -18,13 +18,19 @@ const files = {
 
 async function test(params) {
   console.time('Bundler');
-  console.log(
-    await new Bundler({
-      input: '1',
-      resolve: id => id,
-      parse: id => Promise.resolve(files[id])
-    })
-  );
+
+  try {
+    console.log(
+      await new Bundler({
+        input: '1',
+        resolve: id => id,
+        parse: id => Promise.resolve(files[id])
+      })
+    );
+  } catch (error) {
+    console.error(error);
+  }
+
   console.timeEnd('Bundler');
 }
 

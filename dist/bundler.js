@@ -70,6 +70,26 @@ function unique(array) {
 }
 
 /**
+ * @function circle
+ * @param {string} path
+ * @param {string} referers
+ * @param {Map} visited
+ */
+function circle(path, referer, visited) {
+  if (path === referer) return true;
+
+  const referers = visited.get(referer).referers;
+
+  if (referers.has(path)) return true;
+
+  for (let referer of referers) {
+    if (circle(path, referer, visited)) return true;
+  }
+
+  return false;
+}
+
+/**
  * @module visitor
  * @license MIT
  * @version 2018/01/25
@@ -96,32 +116,58 @@ class Visitor {
    * @returns {Primise}
    */
   traverse(input, options, referer) {
-    return new Promise(async resolve => {
-      const path = String(await options.resolve(String(input), referer));
+    return new Promise(async (resolve, reject) => {
+      try {
+        const path = String(await options.resolve(String(input), referer));
 
-      // If visited resolved cached file
-      if (this.visited.has(path)) return resolve(this.visited.get(path));
+        // If visited resolved cached file
+        if (this.visited.has(path)) {
+          const cached = this.visited.get(path);
 
-      const meta = (await options.parse(path)) || {};
-      const dependencies = meta.dependencies;
-      const file = new File(path, dependencies, meta.data);
+          if (!options.circle) {
+            if (circle(path, referer, this.visited)) {
+              return reject(new ReferenceError(`Found circularly dependency ${path} at ${referer}.`));
+            }
 
-      // Set visited
-      this.visited.set(path, file);
+            cached.referers.add(referer);
+          }
 
-      // Traverse dependencies
-      if (Array.isArray(dependencies) && dependencies.length) {
-        const bundler = flatten(
-          await Promise.all(dependencies.map(dependency => this.traverse(dependency, options, path)))
-        );
+          return resolve(cached.file);
+        }
 
-        bundler.push(file);
+        const meta = (await options.parse(path)) || {};
+        const dependencies = meta.dependencies;
+        const file = new File(path, dependencies, meta.data);
 
-        return resolve(bundler);
+        // Set visited
+        if (!options.circle) {
+          const referers = new Set();
+
+          referer && referers.add(referer);
+
+          this.visited.set(path, { referers, file });
+        } else {
+          this.visited.set(path, { file });
+        }
+
+        // Traverse dependencies
+        if (Array.isArray(dependencies) && dependencies.length) {
+          const bundle = flatten(
+            await Promise.all(dependencies.map(dependency => this.traverse(dependency, options, path)))
+          );
+
+          // Put file at last
+          bundle.push(file);
+
+          // Resolved
+          return resolve(bundle);
+        }
+
+        // Resolved
+        resolve(file);
+      } catch (error) {
+        reject(error);
       }
-
-      // Resolved
-      resolve(file);
     });
   }
 }
@@ -149,8 +195,12 @@ class Bundler {
    * @param {Object} options
    */
   bundle(options) {
-    return new Promise(async resolve => {
-      resolve(unique(await new Visitor(options)));
+    return new Promise(async (resolve, reject) => {
+      try {
+        resolve(unique(await new Visitor(options)));
+      } catch (error) {
+        return reject(error);
+      }
     });
   }
 }
