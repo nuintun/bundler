@@ -35,7 +35,7 @@ export default class Bundler {
       }
 
       // Resolved
-      resolve(unique(bundle));
+      resolve(unique(bundle, file => file.path));
     });
   }
 }

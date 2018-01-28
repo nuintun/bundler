@@ -52,19 +52,20 @@ function flatten(array) {
 }
 
 /**
- * @function function
+ * @function unique
  * @param {Array} array
+ * @param {Function} filter
  * @returns {Array}
  */
-function unique(array) {
-  const cached = new Set();
+function unique(array, filter = value => value) {
+  const marks = new Set();
 
-  return array.filter(file => {
-    const path = file.path;
+  return array.filter(value => {
+    const mark = filter(value);
 
-    if (cached.has(path)) return false;
+    if (marks.has(mark)) return false;
 
-    cached.add(path);
+    marks.add(mark);
 
     return true;
   });
@@ -106,9 +107,31 @@ class Visitor {
    * @param {Object} options
    */
   constructor(options = {}) {
+    this.error = null;
     this.visited = new Map();
 
     return this.traverse(options.input, options);
+  }
+
+  /**
+   * @method visitDependencies
+   * @param {Array} dependencies
+   * @param {Object} options
+   * @param {string} referer
+   * @returns {Primise}
+   */
+  visitDependencies(dependencies, options, referer) {
+    const cache = new Set();
+    const promises = dependencies.reduce((promises, dependency) => {
+      if (cache.has(dependency)) return promises;
+
+      cache.add(dependency);
+      promises.push(this.traverse(dependency, options, referer));
+
+      return promises;
+    }, []);
+
+    return Promise.all(promises);
   }
 
   /**
@@ -119,67 +142,85 @@ class Visitor {
    */
   traverse(input, options, referer) {
     return new Promise(async (resolve, reject) => {
-      const path = String(await options.resolve(String(input), referer));
+      // If has error reject error
+      if (this.error) return reject(this.error);
 
-      // If visited return cached file
-      if (this.visited.has(path)) {
-        const cached = this.visited.get(path);
-
-        if (!options.cycle) {
-          if (cycle(path, referer, this.visited)) {
-            return reject(new ReferenceError(`Found circularly dependency ${path} at ${referer}.`));
-          }
-
-          cached.referers.add(referer);
-        }
-
-        try {
-          return resolve(await cached.ready);
-        } catch (error) {
-          return reject(error);
-        }
+      // Resolve input path
+      try {
+        input = await options.resolve(input, referer);
+      } catch (error) {
+        return reject((this.error = error));
       }
 
-      const ready = new Promise(async (resolve, reject) => {
-        const meta = (await options.parse(path)) || {};
-        const dependencies = meta.dependencies;
-        const file = new File(path, dependencies, meta.contents);
+      // Ready
+      let ready;
 
-        // Traverse dependencies
-        if (Array.isArray(dependencies) && dependencies.length) {
-          let bundle;
-          const promises = dependencies.map(dependency => this.traverse(dependency, options, path));
+      // Hit visited file
+      if (this.visited.has(input)) {
+        const visited = this.visited.get(input);
+
+        // Circularly dependency
+        if (cycle(input, referer, this.visited)) {
+          if (!options.cycle) {
+            return reject((this.error = new ReferenceError(`Found circularly dependency ${input} at ${referer}.`)));
+          } else {
+            return resolve();
+          }
+        }
+
+        // Cache referer
+        visited.referers.add(referer);
+
+        // Get ready promise
+        ready = visited.ready;
+      } else {
+        // Define ready promise
+        ready = new Promise(async (resolve, reject) => {
+          let meta;
 
           try {
-            bundle = await Promise.all(promises);
+            meta = (await options.parse(input)) || {};
           } catch (error) {
-            return reject(error);
+            return reject((this.error = error));
           }
 
-          // Flatten bundle
-          bundle = flatten(bundle);
+          const dependencies = meta.dependencies;
+          const file = new File(input, dependencies, meta.contents);
 
-          // Put file at last
-          bundle.push(file);
+          // Traverse dependencies
+          if (Array.isArray(dependencies) && dependencies.length) {
+            let bundle;
 
-          return resolve(bundle);
-        }
+            try {
+              bundle = await this.visitDependencies(dependencies, options, input);
+            } catch (error) {
+              return reject(error);
+            }
 
-        // Resolved
-        resolve(file);
-      });
+            // Flatten bundle
+            bundle = flatten(bundle);
 
-      // Set visited
-      if (!options.cycle) {
+            // Put file at last
+            bundle.push(file);
+
+            return resolve(bundle);
+          }
+
+          // Resolved
+          resolve(file);
+        });
+
+        // Referers Set
         const referers = new Set();
 
+        // Add referer
         referer && referers.add(referer);
 
-        this.visited.set(path, { referers, ready });
-      } else {
-        this.visited.set(path, { ready });
+        // Set visited
+        this.visited.set(input, { referers, ready });
       }
 
+      // Await ready
       try {
         resolve(await ready);
       } catch (error) {
@@ -223,7 +264,7 @@ class Bundler {
       }
 
       // Resolved
-      resolve(unique(bundle));
+      resolve(unique(bundle, file => file.path));
     });
   }
 }

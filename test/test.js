@@ -7,14 +7,14 @@
 const Bundler = require('../dist/bundler');
 
 const files = {
-  1: { dependencies: ['2', '3'] },
-  2: { dependencies: ['4', '5', '6'] },
-  3: { dependencies: ['6', '7'] },
-  4: { dependencies: ['7'] },
-  5: { dependencies: [] },
-  6: { dependencies: ['8', '1'] },
-  7: { dependencies: [] },
-  8: { dependencies: [] }
+  1: { dependencies: ['2', '3'], contents: '1' },
+  2: { dependencies: ['3', '4'], contents: '2' },
+  3: { dependencies: ['4', '5'], contents: '3' },
+  4: { dependencies: ['5', '6'], contents: '4' },
+  5: { dependencies: ['6'], contents: '5' },
+  6: { dependencies: ['7'], contents: '6' },
+  7: { dependencies: ['8'], contents: '7' },
+  8: { dependencies: [], contents: '8' }
 };
 
 async function test(params) {
@@ -24,15 +24,9 @@ async function test(params) {
     console.log(
       await new Bundler({
         input: '1',
+        cycle: true,
         resolve: id => id,
-        parse: id =>
-          new Promise((resolve, reject) => {
-            if (id === '2') {
-              setTimeout(() => resolve(files[id]), 1000);
-            } else {
-              resolve(files[id]);
-            }
-          })
+        parse: id => Promise.resolve(files[id])
       })
     );
   } catch (error) {
