@@ -12,8 +12,9 @@ const files = {
   3: { dependencies: ['6', '7'] },
   4: { dependencies: ['7'] },
   5: { dependencies: [] },
-  6: { dependencies: [] },
-  7: { dependencies: [] }
+  6: { dependencies: ['8', '1'] },
+  7: { dependencies: [] },
+  8: { dependencies: [] }
 };
 
 async function test(params) {
@@ -24,7 +25,14 @@ async function test(params) {
       await new Bundler({
         input: '1',
         resolve: id => id,
-        parse: id => Promise.resolve(files[id])
+        parse: id =>
+          new Promise((resolve, reject) => {
+            if (id === '2') {
+              setTimeout(() => resolve(files[id]), 1000);
+            } else {
+              resolve(files[id]);
+            }
+          })
       })
     );
   } catch (error) {

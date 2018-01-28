@@ -24,15 +24,18 @@ export default class Bundler {
    * @param {Object} options
    */
   bundle(options) {
-    const main = async () => unique(await new Visitor(options));
-
     // Returned promise
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+      let bundle;
+
       try {
-        resolve(main());
+        bundle = await new Visitor(options);
       } catch (error) {
         return reject(error);
       }
+
+      // Resolved
+      resolve(unique(bundle));
     });
   }
 }
