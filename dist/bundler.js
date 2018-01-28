@@ -45,8 +45,6 @@ class File {
  */
 function flatten(array) {
   return array.reduce(function(array, value) {
-    if (!value) return array;
-
     return array.concat(Array.isArray(value) ? flatten(value) : value);
   }, []);
 }
@@ -164,7 +162,7 @@ class Visitor {
           if (!options.cycle) {
             return reject((this.error = new ReferenceError(`Found circularly dependency ${input} at ${referer}.`)));
           } else {
-            return resolve();
+            return resolve([]);
           }
         }
 
@@ -207,7 +205,7 @@ class Visitor {
           }
 
           // Resolved
-          resolve(file);
+          resolve([file]);
         });
 
         // Referers Set
