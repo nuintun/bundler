@@ -14,7 +14,7 @@ const files = {
   5: { dependencies: ['6'], contents: '5' },
   6: { dependencies: ['7'], contents: '6' },
   7: { dependencies: ['8'], contents: '7' },
-  8: { dependencies: [], contents: '8' }
+  8: { dependencies: ['6'], contents: '8' }
 };
 
 async function bunder(input) {

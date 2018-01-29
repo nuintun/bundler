@@ -50,6 +50,7 @@ class Visitor {
     this.error = null;
     this.visited = new Map();
     this.bundles = new Set();
+    this.unreay = new Set();
   }
 
   cycle(input, referer) {
@@ -148,21 +149,29 @@ class Visitor {
 
     // Hit visited file
     if (this.visited.has(input)) {
+      console.log('cache  : %s => %s', referer, input);
+      console.log('unready:', Array.from(this.unreay));
+
       // Circularly dependency
-      if (this.cycle(input, referer)) {
-        if (!options.cycle) {
-          throw (this.error = new ReferenceError(`Found circularly dependency ${input} at ${referer}.`));
-        }
-      } else {
-        // Get ready promise
-        ready = this.visited.get(input);
-      }
+      // if (this.cycle(input, referer)) {
+      //   if (!options.cycle) {
+      //     throw (this.error = new ReferenceError(`Found circularly dependency ${input} at ${referer}.`));
+      //   }
+      // } else {
+      //   // Get ready promise
+      //   ready = this.visited.get(input);
+      // }
+      ready = this.visited.get(input);
     } else {
+      // console.log('nocache: %s => %s', referer, input);
+      this.unreay.add(input);
       this.visited.set(input, (ready = this.visit(input, options)));
     }
 
     // Await ready
     await ready;
+
+    this.unreay.delete(input);
 
     if (!referer) {
       return Array.from(this.bundles);

@@ -27,6 +27,7 @@
     "rollup": "^0.55.1"
   },
   "scripts": {
+    "build": "node rollup",
     "test": "node tests/bunder.js"
   }
 }
