@@ -1,6 +1,6 @@
 # bundler
 
-> A file dependency bundle parser
+> A async file dependency bundle parser
 >
 > ![Node Version][node-image]
 > [![Dependencies][david-image]][david-url]

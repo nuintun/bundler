@@ -11,3 +11,6 @@ node_modules
 
 # build tools
 rollup.js
+
+# package lock
+package-lock.json
