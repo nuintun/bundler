@@ -143,6 +143,9 @@ class Visitor {
       // If has error reject error
       if (this.error) return reject(this.error);
 
+      // Format input
+      input = String(input);
+
       // Resolve input path
       try {
         input = await options.resolve(input, referer);
@@ -152,6 +155,9 @@ class Visitor {
 
       // Ready
       let ready;
+
+      // Format input
+      input = String(input);
 
       // Hit visited file
       if (this.visited.has(input)) {
@@ -177,31 +183,34 @@ class Visitor {
           let meta;
 
           try {
-            meta = (await options.parse(input)) || {};
+            meta = await options.parse(input);
           } catch (error) {
             return reject((this.error = error));
           }
+
+          // Fallback meta
+          meta = meta || {};
 
           const dependencies = meta.dependencies;
           const file = new File(input, dependencies, meta.contents);
 
           // Traverse dependencies
           if (Array.isArray(dependencies) && dependencies.length) {
-            let bundle;
+            let files;
 
             try {
-              bundle = await this.visitDependencies(dependencies, options, input);
+              files = await this.visitDependencies(dependencies, options, input);
             } catch (error) {
               return reject(error);
             }
 
-            // Flatten bundle
-            bundle = flatten(bundle);
+            // Flatten files
+            files = flatten(files);
 
-            // Put file at last
-            bundle.push(file);
+            // Put current file at last
+            files.push(file);
 
-            return resolve(bundle);
+            return resolve(files);
           }
 
           // Resolved
