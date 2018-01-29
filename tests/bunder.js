@@ -1,5 +1,5 @@
 /**
- * @module test
+ * @module bunder
  * @license MIT
  * @version 2018/01/26
  */
