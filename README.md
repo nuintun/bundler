@@ -42,11 +42,11 @@ const files = {
   8: { dependencies: [], contents: '8' }
 };
 
-async function bunder(params) {
+async function bunder(input) {
   try {
     console.log(
       await new Bundler({
-        input: '1',
+        input,
         cycle: true,
         resolve: id => id,
         parse: id => Promise.resolve(files[id])
@@ -57,7 +57,7 @@ async function bunder(params) {
   }
 }
 
-bunder();
+bunder('1');
 
 // Output:
 // [ File { path: '8', dependencies: [], contents: '8' },

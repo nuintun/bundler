@@ -17,13 +17,13 @@ const files = {
   8: { dependencies: [], contents: '8' }
 };
 
-async function test(params) {
+async function bunder(input) {
   console.time('Bundler');
 
   try {
     console.log(
       await new Bundler({
-        input: '1',
+        input,
         cycle: true,
         resolve: id => id,
         parse: id => Promise.resolve(files[id])
@@ -36,4 +36,4 @@ async function test(params) {
   console.timeEnd('Bundler');
 }
 
-test();
+bunder('1');

@@ -1,6 +1,6 @@
 {
   "name": "@nuintun/bundler",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A async file dependency bundle parser.",
   "main": "dist/bundler.js",
   "directories": {
@@ -27,6 +27,6 @@
     "rollup": "^0.55.1"
   },
   "scripts": {
-    "test": "node test/test.js"
+    "test": "node tests/bunder.js"
   }
 }
