@@ -1,0 +1,13 @@
+# src
+lib
+index.js
+
+# node modules
+node_modules
+
+# ignore
+.gitignore
+.npmignore
+
+# build tools
+rollup.js
