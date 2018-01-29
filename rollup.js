@@ -11,7 +11,7 @@ const rollup = require('rollup');
 const pkg = require('./package.json');
 
 const banner = `/**
- * @module ${pkg.name}
+ * @module bundler
  * @author ${pkg.author.name}
  * @license ${pkg.license}
  * @version ${pkg.version}
