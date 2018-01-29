@@ -7,7 +7,7 @@
 
 ### API
 
-> new bundler(options)
+> new Bundler(options)
 >
 > > options.input: string
 > >
@@ -28,7 +28,7 @@
 ### Examples
 
 ```js
-const Bundler = require('../dist/bundler');
+const Bundler = require('@nuintun/bundler');
 
 const files = {
   1: { dependencies: ['2', '3'], contents: '1' },

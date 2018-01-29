@@ -1,5 +1,5 @@
 {
-  "name": "bundler",
+  "name": "@nuintun/bundler",
   "version": "0.0.1",
   "description": "A file dependency bundle parser.",
   "main": "dist/bundler.js",
