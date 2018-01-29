@@ -8,23 +8,23 @@
 
 ### API
 
-> new Bundler(options)
+> #### new Bundler(options: Object)
 >
-> > options.input: string
-> >
-> > > path of input file
+> options.input: string
 >
-> > options.cycle: boolean
-> >
-> > > support circularly dependency
+> > path of input file
 >
-> > options.resolve(path: string, referer: string) => path: string
-> >
-> > > path resolve function
+> options.cycle: boolean
 >
-> > options.parse(path: string) => { dependencies: Array, contents: any }
-> >
-> > > file dependencies parse function
+> > support circularly dependency
+>
+> options.resolve(path: string, referer: string) => path: string
+>
+> > path resolve function
+>
+> options.parse(path: string) => { dependencies: Array, contents: any }
+>
+> > file dependencies parse function
 
 ### Examples
 
