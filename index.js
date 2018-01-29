@@ -26,16 +26,16 @@ export default class Bundler {
   bundle(options) {
     // Returned promise
     return new Promise(async (resolve, reject) => {
-      let bundle;
+      let files;
 
       try {
-        bundle = await new Visitor(options);
+        files = await new Visitor(options);
       } catch (error) {
         return reject(error);
       }
 
       // Resolved
-      resolve(unique(bundle, file => file.path));
+      resolve(unique(files, file => file.path));
     });
   }
 }
