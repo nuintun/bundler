@@ -70,8 +70,8 @@ bunder();
 //   File { path: '1', dependencies: [ '2', '3' ], contents: '1' } ]
 ```
 
-[npm-image]: https://img.shields.io/npm/v/bundler.svg?style=flat-square
-[npm-url]: https://www.npmjs.org/package/bundler
+[npm-image]: https://img.shields.io/npm/v/@nuintun/bundler.svg?style=flat-square
+[npm-url]: https://www.npmjs.org/package/@nuintun/bundler
 [node-image]: https://img.shields.io/node/v/@nuintun/bundler.svg?style=flat-square
 [david-image]: http://img.shields.io/david/dev/nuintun/bundler.svg?style=flat-square
 [david-url]: https://david-dm.org/nuintun/bundler?type=dev
