@@ -2,7 +2,7 @@
  * @module bundler
  * @author nuintun
  * @license MIT
- * @version 0.0.2
+ * @version 0.0.3
  * @description A async file dependency bundle parser.
  * @see https://github.com/nuintun/bundler#readme
  */
@@ -44,9 +44,7 @@ class File {
  * @returns {Array}
  */
 function flatten(array) {
-  return array.reduce(function(array, value) {
-    return array.concat(Array.isArray(value) ? flatten(value) : value);
-  }, []);
+  return array.reduce((array, value) => array.concat(value), []);
 }
 
 /**
@@ -70,24 +68,35 @@ function unique(array, filter = value => value) {
 }
 
 /**
- * @function cycle
- * @param {string} path
- * @param {string} referers
+ * @function visitReferers
+ * @param {string} input
+ * @param {Set} referers
  * @param {Map} visited
  * @returns {boolean}
  */
-function cycle(path, referer, visited) {
-  if (path === referer) return true;
-
-  const referers = visited.get(referer).referers;
-
-  if (referers.has(path)) return true;
-
+function visitReferers(input, referers, visited) {
   for (let referer of referers) {
-    if (cycle(path, referer, visited)) return true;
+    if (cycle(input, referer, visited)) return true;
   }
 
   return false;
+}
+
+/**
+ * @function cycle
+ * @param {string} input
+ * @param {string} referer
+ * @param {Map} visited
+ * @returns {boolean}
+ */
+function cycle(input, referer, visited) {
+  if (input === referer) return true;
+
+  const referers = visited.get(referer).referers;
+
+  if (referers.has(input)) return true;
+
+  return visitReferers(input, referers, visited);
 }
 
 /**
