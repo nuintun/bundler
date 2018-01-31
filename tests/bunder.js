@@ -46,3 +46,4 @@ async function bunder(input) {
 }
 
 bunder('1');
+console.log('async');
