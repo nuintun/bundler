@@ -15,8 +15,11 @@ const files = {
   6: { dependencies: ['7'], contents: '6' },
   7: { dependencies: ['8'], contents: '7' },
   8: { dependencies: ['9'], contents: '8' },
-  9: { dependencies: [], contents: '9' }
+  9: { dependencies: ['1'], contents: '9' }
 };
+
+// npm test allow-cycle
+const cycle = process.argv[2] === 'allow-cycle';
 
 async function bunder(input) {
   console.time('Bundler');
@@ -25,7 +28,7 @@ async function bunder(input) {
     console.log(
       await new Bundler({
         input,
-        cycle: false,
+        cycle,
         resolve: id => id,
         parse: id => {
           return new Promise((resolve, reject) => {
@@ -46,4 +49,4 @@ async function bunder(input) {
 }
 
 bunder('1');
-console.log('async');
+console.log('Async');
