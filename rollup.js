@@ -24,11 +24,11 @@ rollup
   .rollup({
     input: 'index.js'
   })
-  .then(function(bundle) {
+  .then(bundle => {
     try {
       fs.statSync('dist');
     } catch (e) {
-      // No such file or directory
+      // Make directory
       fs.mkdirSync('dist');
     }
 
@@ -40,16 +40,16 @@ rollup
         interop: false,
         banner: banner
       })
-      .then(function(result) {
+      .then(result => {
         const output = 'dist/bundler.js';
 
         fs.writeFileSync(output, result.code);
         console.log(`  Build ${output} success!`);
       })
-      .catch(function(error) {
+      .catch(error => {
         console.error(error);
       });
   })
-  .catch(function(error) {
+  .catch(error => {
     console.error(error);
   });
