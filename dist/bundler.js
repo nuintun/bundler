@@ -2,7 +2,7 @@
  * @module bundler
  * @author nuintun
  * @license MIT
- * @version 0.0.5
+ * @version 0.0.6
  * @description A async file dependency bundle parser.
  * @see https://github.com/nuintun/bundler#readme
  */
@@ -22,11 +22,22 @@ class File {
   /**
    * @constructor
    * @param {string} path
-   * @param {Array} dependencies
+   * @param {Array|Set} dependencies
    * @param {any} contents
+   * @returns File
    */
-  constructor(path, dependencies = [], contents = null) {
+  constructor(path, dependencies = new Set(), contents = null) {
     this.path = path;
+
+    // Normalize dependencies
+    if (!(dependencies instanceof Set)) {
+      if (Array.isArray(dependencies)) {
+        dependencies = new Set(dependencies);
+      } else {
+        dependencies = new Set();
+      }
+    }
+
     this.dependencies = dependencies;
     this.contents = contents;
   }
@@ -45,26 +56,24 @@ class Visitor {
   /**
    * @constructor
    * @param {Object} options
+   * @returns {Promise}
    */
   constructor(options = {}) {
-    this.error = null;
+    this.files = new Set();
     this.visited = new Map();
-    this.bundles = new Set();
-    this.unreay = new Set();
+    this.waiting = new Set();
+
+    return this.traverse(options.input, options);
   }
 
+  /**
+   * @method cycle
+   * @param {string} input
+   * @param {string} referer
+   * @returns {boolean}
+   */
   cycle(input, referer) {
-    if (input === referer) return true;
-
-    const bundles = this.bundles;
-
-    for (let bundle of bundles) {
-      if (input === bundle.path || referer === bundle.path) {
-        return true;
-      }
-    }
-
-    return false;
+    return this.waiting.has(input);
   }
 
   /**
@@ -74,51 +83,20 @@ class Visitor {
    * @returns {Primise}
    */
   async visit(input, options) {
-    let meta;
-
-    try {
-      meta = await options.parse(input);
-    } catch (error) {
-      throw (this.error = error);
-    }
-
-    // Fallback meta
-    meta = meta || {};
-
-    const dependencies = meta.dependencies;
-    const file = new File(input, dependencies, meta.contents);
+    const meta = (await options.parse(input)) || {};
+    const file = new File(input, meta.dependencies, meta.contents);
+    const dependencies = file.dependencies;
 
     // Traverse dependencies
-    if (Array.isArray(dependencies) && dependencies.length) {
-      try {
-        await this.visitDepend(dependencies, options, input);
-      } catch (error) {
-        throw error;
+    if (dependencies.size) {
+      for (let dependency of dependencies) {
+        // Recursive
+        await this.traverse(dependency, options, input);
       }
     }
 
-    this.bundles.add(file);
-  }
-
-  /**
-   * @method visitDepend
-   * @param {Array} dependencies
-   * @param {Object} options
-   * @param {string} referer
-   * @returns {Primise}
-   */
-  visitDepend(dependencies, options, referer) {
-    const cache = new Set();
-    const promises = dependencies.reduce((promises, dependency) => {
-      if (cache.has(dependency)) return promises;
-
-      cache.add(dependency);
-      promises.push(this.traverse(dependency, options, referer));
-
-      return promises;
-    }, []);
-
-    return Promise.all(promises);
+    // Add file
+    this.files.add(file);
   }
 
   /**
@@ -128,53 +106,46 @@ class Visitor {
    * @returns {Primise}
    */
   async traverse(input, options, referer) {
-    // If has error reject error
-    if (this.error) throw this.error;
-
-    // Format input
-    input = String(input);
-
     // Resolve input path
-    try {
-      input = await options.resolve(input, referer);
-    } catch (error) {
-      throw (this.error = error);
-    }
+    input = String(await options.resolve(String(input), referer));
 
     // Ready
     let ready;
 
-    // Format input
-    input = String(input);
-
     // Hit visited file
     if (this.visited.has(input)) {
-      console.log('cache  : %s => %s', referer, input);
-      console.log('unready:', Array.from(this.unreay));
+      // Found circularly dependency
+      if (this.cycle(input, referer)) {
+        // When not allowed cycle throw error
+        if (!options.cycle) {
+          throw new ReferenceError(`Found circularly dependency ${input} at ${referer}.`);
+        }
 
-      // Circularly dependency
-      // if (this.cycle(input, referer)) {
-      //   if (!options.cycle) {
-      //     throw (this.error = new ReferenceError(`Found circularly dependency ${input} at ${referer}.`));
-      //   }
-      // } else {
-      //   // Get ready promise
-      //   ready = this.visited.get(input);
-      // }
-      ready = this.visited.get(input);
+        // Returned
+        return;
+      } else {
+        ready = this.visited.get(input);
+      }
     } else {
-      // console.log('nocache: %s => %s', referer, input);
-      this.unreay.add(input);
       this.visited.set(input, (ready = this.visit(input, options)));
     }
+
+    // Add waiting
+    this.waiting.add(input);
 
     // Await ready
     await ready;
 
-    this.unreay.delete(input);
+    // Delete waiting
+    this.waiting.delete(input);
 
+    // Returned files at entry file
     if (!referer) {
-      return Array.from(this.bundles);
+      // Free visited
+      this.visited.clear();
+
+      // Returned files
+      return this.files;
     }
   }
 }
@@ -188,15 +159,21 @@ class Visitor {
 /**
  * @class Bundler
  */
-class Bundler extends Visitor {
+class Bundler {
   /**
    * @constructor
    * @param {Object} options
+   * @returns {Promise}
    */
   constructor(options = {}) {
-    super(options);
+    // Assert resolve and parse
+    ['resolve', 'parse'].forEach(name => {
+      if (typeof options[name] !== 'function') {
+        throw new TypeError(`options.${name} muse be a function.`);
+      }
+    });
 
-    return this.traverse(options.input, options);
+    return new Visitor(options);
   }
 }
 

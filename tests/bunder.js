@@ -9,12 +9,13 @@ const Bundler = require('../dist/bundler');
 const files = {
   1: { dependencies: ['2', '3'], contents: '1' },
   2: { dependencies: ['3', '4'], contents: '2' },
-  3: { dependencies: ['4', '5'], contents: '3' },
-  4: { dependencies: ['5', '6'], contents: '4' },
+  3: { dependencies: ['5'], contents: '3' },
+  4: { dependencies: ['3', '6'], contents: '4' },
   5: { dependencies: ['6'], contents: '5' },
   6: { dependencies: ['7'], contents: '6' },
   7: { dependencies: ['8'], contents: '7' },
-  8: { dependencies: ['6'], contents: '8' }
+  8: { dependencies: ['9'], contents: '8' },
+  9: { dependencies: [], contents: '9' }
 };
 
 async function bunder(input) {
@@ -24,9 +25,17 @@ async function bunder(input) {
     console.log(
       await new Bundler({
         input,
-        cycle: true,
+        cycle: false,
         resolve: id => id,
-        parse: id => Promise.resolve(files[id])
+        parse: id => {
+          return new Promise((resolve, reject) => {
+            if (id === '3') {
+              setTimeout(() => resolve(files[id]), 1000);
+            } else {
+              resolve(files[id]);
+            }
+          });
+        }
       })
     );
   } catch (error) {

@@ -7,10 +7,13 @@
 const Bundler = require('../dist/bundler');
 
 const files = {};
-const length = 10;
+const length = 10000;
 
 for (let i = 1; i < length; i++) {
-  files[i] = { dependencies: i < length - 3 ? [String(i + 1), String(i + 2), String(i + 3)] : [], contents: String(i) };
+  const contents = String(i);
+  const dependencies = i < length - 3 ? [String(i + 1), String(i + 2), String(i + 3)] : [];
+
+  files[i] = { dependencies, contents };
 }
 
 async function bunder(input) {

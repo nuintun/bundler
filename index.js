@@ -9,14 +9,20 @@ import Visitor from './lib/visitor';
 /**
  * @class Bundler
  */
-export default class Bundler extends Visitor {
+export default class Bundler {
   /**
    * @constructor
    * @param {Object} options
+   * @returns {Promise}
    */
   constructor(options = {}) {
-    super(options);
+    // Assert resolve and parse
+    ['resolve', 'parse'].forEach(name => {
+      if (typeof options[name] !== 'function') {
+        throw new TypeError(`options.${name} muse be a function.`);
+      }
+    });
 
-    return this.traverse(options.input, options);
+    return new Visitor(options);
   }
 }
