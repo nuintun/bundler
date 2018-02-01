@@ -23,6 +23,7 @@ export default class Bundler {
       }
     });
 
+    // Returned bundles
     return new Visitor(options);
   }
 }

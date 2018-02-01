@@ -70,11 +70,14 @@ class Visitor {
      * @returns {Promise}
      */
     const traverse = async (input, options) => {
+      // Await all files ready
       await this.traverse(input, options);
 
+      // Returned files
       return this.files;
     };
 
+    // Returned bundles
     return traverse(options.input, options);
   }
 
@@ -181,6 +184,7 @@ class Bundler {
       }
     });
 
+    // Returned bundles
     return new Visitor(options);
   }
 }
