@@ -73,6 +73,9 @@ class Visitor {
       // Await all files ready
       await this.traverse(input, options);
 
+      // Clear visited
+      this.visited.clear();
+
       // Returned files
       return this.files;
     };
