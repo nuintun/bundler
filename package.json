@@ -3,9 +3,6 @@
   "version": "0.0.6",
   "description": "A async file dependency bundle parser.",
   "main": "dist/bundler.js",
-  "directories": {
-    "lib": "lib"
-  },
   "engines": {
     "node": ">=7.10.1"
   },
@@ -24,7 +21,7 @@
   },
   "homepage": "https://github.com/nuintun/bundler#readme",
   "devDependencies": {
-    "rollup": "^0.55.1"
+    "rollup": "^0.55.3"
   },
   "scripts": {
     "build": "node rollup",
