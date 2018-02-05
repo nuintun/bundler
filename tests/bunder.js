@@ -32,11 +32,10 @@ async function bunder(input) {
         resolve: id => id,
         parse: id => {
           return new Promise((resolve, reject) => {
-            if (id === '3') {
-              setTimeout(() => resolve(files[id]), 1000);
-            } else {
-              resolve(files[id]);
-            }
+            const delay = id * 10;
+
+            console.log(`Parse ${id} waiting ${delay}ms`);
+            setTimeout(() => resolve(files[id]), delay);
           });
         }
       })
