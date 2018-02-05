@@ -19,7 +19,7 @@ export default class Bundler {
     // Assert resolve and parse
     ['resolve', 'parse'].forEach(name => {
       if (typeof options[name] !== 'function') {
-        throw new TypeError(`options.${name} muse be a function.`);
+        throw new TypeError(`options.${name} must be a function.`);
       }
     });
 

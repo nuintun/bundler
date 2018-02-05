@@ -2,7 +2,7 @@
  * @module bundler
  * @author nuintun
  * @license MIT
- * @version 0.0.6
+ * @version 0.0.7
  * @description A async file dependency bundle parser.
  * @see https://github.com/nuintun/bundler#readme
  */
@@ -183,7 +183,7 @@ class Bundler {
     // Assert resolve and parse
     ['resolve', 'parse'].forEach(name => {
       if (typeof options[name] !== 'function') {
-        throw new TypeError(`options.${name} muse be a function.`);
+        throw new TypeError(`options.${name} must be a function.`);
       }
     });
 
