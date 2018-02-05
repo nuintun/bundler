@@ -22,9 +22,5 @@
   "homepage": "https://github.com/nuintun/bundler#readme",
   "devDependencies": {
     "rollup": "^0.55.3"
-  },
-  "scripts": {
-    "build": "node rollup",
-    "test": "node tests/bunder.js"
   }
 }

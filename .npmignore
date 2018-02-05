@@ -14,3 +14,6 @@ rollup.js
 
 # package lock
 package-lock.json
+
+# tests
+tests
