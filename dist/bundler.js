@@ -2,7 +2,7 @@
  * @module bundler
  * @author nuintun
  * @license MIT
- * @version 0.0.7
+ * @version 0.0.8
  * @description A async file dependency bundle parser.
  * @see https://github.com/nuintun/bundler#readme
  */
@@ -24,18 +24,16 @@ class File {
    * @param {string} path
    * @param {Array|Set} dependencies
    * @param {any} contents
-   * @returns File
+   * @returns {File}
    */
   constructor(path, dependencies = new Set(), contents = null) {
     this.path = path;
 
     // Normalize dependencies
-    if (!(dependencies instanceof Set)) {
-      if (Array.isArray(dependencies)) {
-        dependencies = new Set(dependencies);
-      } else {
-        dependencies = new Set();
-      }
+    if (Array.isArray(dependencies)) {
+      dependencies = new Set(dependencies);
+    } else if (!(dependencies instanceof Set)) {
+      dependencies = new Set();
     }
 
     this.dependencies = dependencies;

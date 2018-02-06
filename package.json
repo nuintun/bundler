@@ -1,6 +1,6 @@
 {
   "name": "@nuintun/bundler",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A async file dependency bundle parser.",
   "main": "dist/bundler.js",
   "engines": {
