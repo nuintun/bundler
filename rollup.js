@@ -6,9 +6,21 @@
 
 'use strict';
 
-const fs = require('fs');
 const rollup = require('rollup');
 const pkg = require('./package.json');
+
+/**
+ * @function build
+ * @param {Object} inputOptions
+ * @param {Object} outputOptions
+ */
+async function build(inputOptions, outputOptions) {
+  const bundle = await rollup.rollup(inputOptions);
+
+  await bundle.write(outputOptions);
+
+  console.log(`Build ${outputOptions.file} success!`);
+}
 
 const banner = `/**
  * @module bundler
@@ -20,37 +32,19 @@ const banner = `/**
  */
 `;
 
-rollup
-  .rollup({
-    input: 'index.js',
-    preferConst: true
-  })
-  .then(bundle => {
-    try {
-      fs.statSync('dist');
-    } catch (e) {
-      // Make directory
-      fs.mkdirSync('dist');
-    }
+const inputOptions = {
+  input: 'index.js',
+  preferConst: true
+};
 
-    bundle
-      .generate({
-        format: 'cjs',
-        strict: true,
-        indent: true,
-        interop: false,
-        banner: banner
-      })
-      .then(result => {
-        const output = 'dist/bundler.js';
+const outputOptions = {
+  banner,
+  format: 'cjs',
+  strict: true,
+  indent: true,
+  legacy: true,
+  interop: false,
+  file: 'dist/bundler.js'
+};
 
-        fs.writeFileSync(output, result.code);
-        console.log(`  Build ${output} success!`);
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  })
-  .catch(error => {
-    console.error(error);
-  });
+build(inputOptions, outputOptions);

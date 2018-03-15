@@ -2,7 +2,7 @@
  * @module bundler
  * @author nuintun
  * @license MIT
- * @version 0.1.0
+ * @version 0.1.1
  * @description A async file dependency bundle parser.
  * @see https://github.com/nuintun/bundler#readme
  */
@@ -22,8 +22,8 @@ class File {
   /**
    * @constructor
    * @param {string} path
-   * @param {Array|Set} dependencies
-   * @param {any} contents
+   * @param {Array|Set} [dependencies]
+   * @param {any} [contents]
    * @returns {File}
    */
   constructor(path, dependencies = new Set(), contents = null) {
@@ -69,7 +69,7 @@ class Visitor {
      */
     const traverse = async (input, options) => {
       // Await all files ready
-      await this.traverse(input, options);
+      await this.traverse(await input, options);
 
       // Clear visited
       this.visited.clear();
@@ -109,6 +109,9 @@ class Visitor {
     // Traverse dependencies
     if (dependencies.size) {
       for (let dependency of dependencies) {
+        // Resolve dependency path
+        dependency = await options.resolve(String(dependency), input);
+
         // Recursive
         await this.traverse(dependency, options, input);
       }
@@ -128,11 +131,12 @@ class Visitor {
    * @method traverse
    * @param {string} input
    * @param {Object} options
+   * @param {string} [referer]
    * @returns {Primise}
    */
   async traverse(input, options, referer) {
-    // Resolve input path
-    input = String(await options.resolve(String(input), referer));
+    // Normalize input path
+    input = String(input);
 
     // Hit visited file
     if (this.visited.has(input)) {
