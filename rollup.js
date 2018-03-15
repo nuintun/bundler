@@ -22,7 +22,8 @@ const banner = `/**
 
 rollup
   .rollup({
-    input: 'index.js'
+    input: 'index.js',
+    preferConst: true
   })
   .then(bundle => {
     try {

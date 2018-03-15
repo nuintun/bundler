@@ -19,7 +19,7 @@ const files = {
 };
 
 // npm test allow-cycle
-const cycle = process.argv[2] === 'allow-cycle';
+const cycle = process.argv[2] === '--allow-cycle';
 
 async function bunder(input) {
   console.time('Bundler');
