@@ -1,10 +1,10 @@
 {
   "name": "@nuintun/bundler",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A async file dependency bundle parser.",
   "main": "dist/bundler",
   "engines": {
-    "node": ">=7.10.1"
+    "node": ">=7.6.0"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/nuintun/bundler#readme",
   "devDependencies": {
-    "rollup": "^0.56.5"
+    "rollup": "^0.57.0"
   }
 }
