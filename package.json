@@ -1,6 +1,6 @@
 {
   "name": "@nuintun/bundler",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A async file dependency bundle parser.",
   "main": "dist/bundler",
   "engines": {
@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/nuintun/bundler#readme",
   "devDependencies": {
-    "rollup": "^0.57.0"
+    "rollup": "^0.57.1",
+    "fs-extra": "^5.0.0"
   }
 }

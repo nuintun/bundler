@@ -1,11 +1,12 @@
 /**
  * @module rollup
  * @license MIT
- * @version 2017/10/24
+ * @version 2018/03/26
  */
 
 'use strict';
 
+const fs = require('fs-extra');
 const rollup = require('rollup');
 const pkg = require('./package.json');
 
@@ -15,6 +16,8 @@ const pkg = require('./package.json');
  * @param {Object} outputOptions
  */
 async function build(inputOptions, outputOptions) {
+  await fs.remove('dist');
+
   const bundle = await rollup.rollup(inputOptions);
 
   await bundle.write(outputOptions);

@@ -57,6 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
-# npm lock
-package-lock.json
+# vscode
+.vscode
 
+# npm lock file
+package-lock.json
