@@ -56,6 +56,7 @@ class Visitor {
    * @param {Object} options
    * @param {Function} options.resolve
    * @param {Function} options.parse
+   * @param {boolean} [options.cycle]
    * @returns {Promise}
    */
   constructor(options) {
@@ -183,6 +184,7 @@ class Bundler {
    * @param {Object} options
    * @param {Function} options.resolve
    * @param {Function} options.parse
+   * @param {boolean} [options.cycle]
    * @returns {Promise}
    */
   constructor(options) {
