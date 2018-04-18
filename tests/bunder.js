@@ -4,15 +4,15 @@
  * @version 2018/01/26
  */
 
-const Bundler = require('../dist/bundler');
+const Bundler = require('../index');
 
 const files = {
-  1: { dependencies: ['2', '3'], contents: '1' },
-  2: { dependencies: ['3', '4'], contents: '2' },
-  3: { dependencies: ['5'], contents: '3' },
-  4: { dependencies: ['3', '6'], contents: '4' },
-  5: { dependencies: ['6'], contents: '5' },
-  6: { dependencies: ['7'], contents: '6' },
+  1: { dependencies: ['2', '4'], contents: '1' },
+  2: { dependencies: ['3', '5'], contents: '2' },
+  3: { dependencies: ['4', '6'], contents: '3' },
+  4: { dependencies: ['5', '7'], contents: '4' },
+  5: { dependencies: ['6', '8'], contents: '5' },
+  6: { dependencies: ['7', '9'], contents: '6' },
   7: { dependencies: ['8'], contents: '7' },
   8: { dependencies: ['9'], contents: '8' },
   9: { dependencies: ['1'], contents: '9' }

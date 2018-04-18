@@ -16,7 +16,7 @@ const pkg = require('./package.json');
  * @param {Object} outputOptions
  */
 async function build(inputOptions, outputOptions) {
-  await fs.remove('dist');
+  await fs.remove('index.js');
 
   const bundle = await rollup.rollup(inputOptions);
 
@@ -36,7 +36,7 @@ const banner = `/**
 `;
 
 const inputOptions = {
-  input: 'index.js',
+  input: 'src/index.js',
   preferConst: true
 };
 
@@ -47,7 +47,7 @@ const outputOptions = {
   indent: true,
   legacy: true,
   interop: false,
-  file: 'dist/bundler.js'
+  file: 'index.js'
 };
 
 build(inputOptions, outputOptions);

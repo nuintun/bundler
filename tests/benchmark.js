@@ -4,7 +4,7 @@
  * @version 2018/01/29
  */
 
-const Bundler = require('../dist/bundler');
+const Bundler = require('../index');
 
 const files = {};
 const length = 10000;

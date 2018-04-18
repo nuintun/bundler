@@ -13,9 +13,11 @@ export default class Visitor {
   /**
    * @constructor
    * @param {Object} options
+   * @param {Function} options.resolve
+   * @param {Function} options.parse
    * @returns {Promise}
    */
-  constructor(options = {}) {
+  constructor(options) {
     this.files = new Set();
     this.visited = new Map();
     this.waiting = new Set();
@@ -103,7 +105,7 @@ export default class Visitor {
       if (this.cycle(input, referer)) {
         // When not allowed cycle throw error
         if (!options.cycle) {
-          throw new ReferenceError(`Found circularly dependency ${input} at ${referer}.`);
+          throw new ReferenceError(`Found circularly dependency ${input} at ${referer}`);
         }
 
         // Returned
