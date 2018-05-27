@@ -23,7 +23,7 @@
     "prepublishOnly": "node rollup.js"
   },
   "devDependencies": {
-    "rollup": "^0.58.2",
+    "rollup": "^0.59.3",
     "fs-extra": "^6.0.1"
   },
   "homepage": "https://github.com/nuintun/bundler#readme"
