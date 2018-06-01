@@ -20,8 +20,8 @@ export default class Visitor {
    */
   constructor(options) {
     this.files = new Set();
-    this.visited = new Map();
-    this.waiting = new Set();
+    this.waiting = new Map();
+    this.completed = new Set();
 
     /**
      * @function traverse
@@ -33,8 +33,8 @@ export default class Visitor {
       // Await all files ready
       await this.traverse(await input, options);
 
-      // Clear visited
-      this.visited.clear();
+      // Clear completed
+      this.completed.clear();
 
       // Returned files
       return this.files;
@@ -45,25 +45,12 @@ export default class Visitor {
   }
 
   /**
-   * @method cycle
-   * @param {string} input
-   * @param {string} referer
-   * @returns {boolean}
-   */
-  cycle(input, referer) {
-    return this.waiting.has(input);
-  }
-
-  /**
    * @method visit
    * @param {string} input
    * @param {Object} options
    * @returns {Primise}
    */
   async visit(input, options) {
-    // Add waiting
-    this.waiting.add(input);
-
     const meta = (await options.parse(input)) || {};
     const file = new File(input, meta.dependencies, meta.contents);
     const dependencies = file.dependencies;
@@ -81,9 +68,10 @@ export default class Visitor {
 
     // Add file
     this.files.add(file);
-
     // Delete waiting
     this.waiting.delete(input);
+    // Add completed
+    this.completed.add(input);
 
     // Returned
     return true;
@@ -100,28 +88,25 @@ export default class Visitor {
     // Normalize input path
     input = String(input);
 
-    // Hit visited file
-    if (this.visited.has(input)) {
-      // Found circularly dependency
-      if (this.cycle(input, referer)) {
-        // When not allowed cycle throw error
-        if (!options.cycle) {
-          throw new ReferenceError(`Found circularly dependency ${input} at ${referer}`);
-        }
+    // If completed do nothing
+    if (this.completed.has(input)) return true;
 
-        // Returned
+    // Found circularly dependency
+    if (this.waiting.has(input)) {
+      if (options.cycle) {
+        // If allow cycle do nothing
         return true;
+      } else {
+        // When not allowed cycle throw error
+        throw new ReferenceError(`Found circularly dependency ${input} at ${referer}`);
       }
-
-      // Await ready
-      return await this.visited.get(input);
     }
 
-    // Get ready
+    // Visit file
     const ready = this.visit(input, options);
 
-    // Cache file
-    this.visited.set(input, ready);
+    // Add file to waiting
+    this.waiting.set(input, ready);
 
     // Await ready
     return await ready;

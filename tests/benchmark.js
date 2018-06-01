@@ -7,7 +7,7 @@
 const Bundler = require('../index');
 
 const files = {};
-const length = 10000;
+const length = 100000;
 
 for (let i = 1; i < length; i++) {
   const contents = String(i);
