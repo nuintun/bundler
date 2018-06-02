@@ -2,8 +2,8 @@
  * @module bundler
  * @author nuintun
  * @license MIT
- * @version 0.3.2
- * @description A async file dependency bundle parser.
+ * @version 0.3.3
+ * @description An async file dependency bundle parser.
  * @see https://github.com/nuintun/bundler#readme
  */
 

@@ -1,6 +1,6 @@
 # bundler
 
-> A async file dependency bundle parser
+> An async file dependency bundle parser
 >
 > [![NPM Version][npm-image]][npm-url]
 > ![Node Version][node-image]
