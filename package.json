@@ -1,6 +1,6 @@
 {
   "name": "@nuintun/bundler",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "An async file dependency bundle parser.",
   "main": "index.js",
   "engines": {
@@ -25,7 +25,7 @@
     "prepublishOnly": "node rollup.js"
   },
   "devDependencies": {
-    "rollup": "^0.64.1",
+    "rollup": "^0.65.0",
     "fs-extra": "^7.0.0"
   },
   "homepage": "https://github.com/nuintun/bundler#readme"
