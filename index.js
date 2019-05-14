@@ -2,7 +2,7 @@
  * @module bundler
  * @author nuintun
  * @license MIT
- * @version 1.0.1
+ * @version 1.0.2
  * @description An async file dependency bundle parser.
  * @see https://github.com/nuintun/bundler#readme
  */
@@ -12,7 +12,7 @@
 /**
  * @module file
  * @license MIT
- * @version 2018/01/25
+ * @author nuintun
  */
 
 /**
@@ -44,7 +44,7 @@ class File {
 /**
  * @module visitor
  * @license MIT
- * @version 2018/01/25
+ * @author nuintun
  */
 
 /**
@@ -157,7 +157,7 @@ class Visitor {
 /**
  * @module index
  * @license MIT
- * @version 2018/01/25
+ * @author nuintun
  */
 
 /**

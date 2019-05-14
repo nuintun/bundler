@@ -1,7 +1,7 @@
 /**
  * @module index
  * @license MIT
- * @version 2018/01/25
+ * @author nuintun
  */
 
 import Visitor from './lib/visitor';

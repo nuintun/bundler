@@ -1,7 +1,7 @@
 /**
  * @module visitor
  * @license MIT
- * @version 2018/01/25
+ * @author nuintun
  */
 
 import File from './file';
