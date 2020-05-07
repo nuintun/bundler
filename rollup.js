@@ -43,7 +43,6 @@ const outputOptions = {
   banner,
   strict: true,
   indent: true,
-  legacy: true,
   format: 'cjs',
   interop: false,
   file: 'index.js',
