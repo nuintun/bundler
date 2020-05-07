@@ -21,9 +21,9 @@ interface Options {
 export default class Bundler {
     private input;
     private options;
-    private waiting;
     private completed;
     private metadata;
+    private waiting;
     constructor(input: string, options: Options);
     pack(): Promise<Set<Metadata>>;
 }

@@ -28,9 +28,9 @@ function assert(options) {
 }
 class Bundler {
     constructor(input, options) {
-        this.waiting = new Set();
         this.completed = new Set();
         this.metadata = new Set();
+        this.waiting = new Map();
         assert(options);
         this.input = input;
         this.options = options;
@@ -38,8 +38,8 @@ class Bundler {
     async pack() {
         const { input, options, waiting, completed, metadata } = this;
         const { resolve, parse } = options;
-        waiting.add(input);
         let current = await readFile(input, parse);
+        waiting.set(input, current);
         while (current) {
             if (completed.has(current.path)) {
                 current = current.referer;
@@ -55,9 +55,12 @@ class Bundler {
                 }
                 else {
                     const path = await resolve(value, current.path);
-                    if (!waiting.has(path)) {
-                        waiting.add(path);
+                    if (waiting.has(path)) {
+                        current = waiting.get(path);
+                    }
+                    else {
                         current = await readFile(path, parse, current);
+                        waiting.set(path, current);
                     }
                 }
             }

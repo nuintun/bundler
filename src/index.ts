@@ -60,9 +60,9 @@ function assert(options: Options): void | never {
 export default class Bundler {
   private input: string;
   private options: Options;
-  private waiting: Set<string> = new Set<string>();
   private completed: Set<string> = new Set<string>();
   private metadata: Set<Metadata> = new Set<Metadata>();
+  private waiting: Map<string, File> = new Map<string, File>();
 
   constructor(input: string, options: Options) {
     assert(options);
@@ -75,9 +75,9 @@ export default class Bundler {
     const { input, options, waiting, completed, metadata }: Bundler = this;
     const { resolve, parse }: Options = options;
 
-    waiting.add(input);
-
     let current: File | undefined = await readFile(input, parse);
+
+    waiting.set(input, current);
 
     while (current) {
       if (completed.has(current.path)) {
@@ -95,10 +95,12 @@ export default class Bundler {
         } else {
           const path: string = await resolve(value, current.path);
 
-          if (!waiting.has(path)) {
-            waiting.add(path);
-
+          if (waiting.has(path)) {
+            current = waiting.get(path);
+          } else {
             current = await readFile(path, parse, current);
+
+            waiting.set(path, current);
           }
         }
       }
