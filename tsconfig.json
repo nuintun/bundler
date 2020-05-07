@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "pretty": true,
+    "newLine": "LF",
+    "outDir": "dist",
+    "target": "ESNext",
+    "declaration": true,
+    "module": "CommonJS",
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "importHelpers": true,
+    "noUnusedLocals": true,
+    "removeComments": false,
+    "esModuleInterop": true,
+    "strictNullChecks": true,
+    "moduleResolution": "Node",
+    "noUnusedParameters": false,
+    "experimentalDecorators": true,
+    "lib": ["ESNext", "ScriptHost", "DOM"],
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

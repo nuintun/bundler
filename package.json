@@ -1,8 +1,8 @@
 {
   "name": "@nuintun/bundler",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "An async file dependency bundle parser.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "engines": {
     "node": ">=7.6.0"
   },
@@ -22,11 +22,10 @@
     "url": "https://github.com/nuintun/bundler/issues"
   },
   "scripts": {
-    "prepublishOnly": "node rollup.js"
+    "build": "tsc --pretty"
   },
   "devDependencies": {
-    "rollup": "^2.8.2",
-    "fs-extra": "^9.0.0"
+    "typescript": "^3.8.3"
   },
   "homepage": "https://github.com/nuintun/bundler#readme"
 }
