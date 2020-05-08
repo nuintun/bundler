@@ -21,6 +21,13 @@ const files = {
 // npm test allow-cycle
 const cycle = process.argv[2] === '--cycle';
 
+function getRandom(min, max, fixed = 0) {
+  const differ = max - min;
+  const random = Math.random();
+
+  return +(min + differ * random).toFixed(fixed);
+}
+
 async function parse(input) {
   console.time('Bundler');
 
@@ -35,7 +42,7 @@ async function parse(input) {
     },
     parse: path => {
       return new Promise(resolve => {
-        const delay = 20;
+        const delay = getRandom(10, 1000);
 
         setTimeout(() => resolve(files[path]), delay);
 
