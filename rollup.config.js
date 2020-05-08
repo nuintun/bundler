@@ -2,8 +2,12 @@
  * @module rollup.config
  */
 
+import rimraf from 'rimraf';
 import pkg from './package.json';
 import typescript from 'rollup-plugin-typescript2';
+
+rimraf.sync('typings');
+rimraf.sync('index.js');
 
 const banner = `/**
  * @module ${pkg.name}

@@ -27,6 +27,7 @@
     "build": "rollup -c rollup.config.js"
   },
   "devDependencies": {
+    "rimraf": "^3.0.2",
     "rollup": "^2.8.2",
     "typescript": "^3.8.3",
     "rollup-plugin-typescript2": "^0.27.0"
