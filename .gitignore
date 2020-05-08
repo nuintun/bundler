@@ -65,3 +65,7 @@ typings/
 
 # npm lock file
 package-lock.json
+
+# dist
+typings/
+index.js

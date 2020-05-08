@@ -4,42 +4,48 @@
  * @version 2018/01/26
  */
 
-const Bundler = require('../index');
+const Bundler = require('../');
 
 const files = {
-  1: { dependencies: ['2', '4'], contents: '1' },
-  2: { dependencies: ['3', '5'], contents: '2' },
-  3: { dependencies: ['4', '6'], contents: '3' },
-  4: { dependencies: ['5', '7'], contents: '4' },
-  5: { dependencies: ['6', '8'], contents: '5' },
-  6: { dependencies: ['7', '9'], contents: '6' },
-  7: { dependencies: ['8'], contents: '7' },
-  8: { dependencies: ['9'], contents: '8' },
-  9: { dependencies: ['1'], contents: '9' }
+  '/src/1.js': { dependencies: ['2.js', '4.js'], contents: 'file 1' },
+  '/src/2.js': { dependencies: ['./3.js', './5.js'], contents: 'file 2' },
+  '/src/3.js': { dependencies: ['/src/4.js', '/src/6.js'], contents: 'file 3' },
+  '/src/4.js': { dependencies: ['5.js', './7.js'], contents: 'file 4' },
+  '/src/5.js': { dependencies: ['6.js', '/src/8.js'], contents: 'file 5' },
+  '/src/6.js': { dependencies: ['./7.js', '/src/9.js'], contents: 'file 6' },
+  '/src/7.js': { dependencies: ['8.js'], contents: 'file 7' },
+  '/src/8.js': { dependencies: ['./9.js'], contents: 'file 8' },
+  '/src/9.js': { dependencies: ['/src/1.js'], contents: 'file 9' }
 };
 
 // npm test allow-cycle
-const cycle = process.argv[2] === '--allow-cycle';
+const cycle = process.argv[2] === '--cycle';
 
-async function bunder(input) {
+async function parse(input) {
   console.time('Bundler');
 
-  try {
-    console.log(
-      await new Bundler({
-        input,
-        cycle,
-        resolve: id => id,
-        parse: id => {
-          return new Promise((resolve, reject) => {
-            const delay = id * 10;
+  const bunder = new Bundler({
+    cycle,
+    resolve: (path, referer) => {
+      if (/^\//.test(path)) return path;
 
-            console.log(`Parse ${id} waiting ${delay}ms`);
-            setTimeout(() => resolve(files[id]), delay);
-          });
-        }
-      })
-    );
+      const dirname = referer.replace(/\/[^\/]+$/, '');
+
+      return `${dirname}/${path}`.replace(/(\.\/)+/g, '');
+    },
+    parse: path => {
+      return new Promise(resolve => {
+        const delay = 20;
+
+        setTimeout(() => resolve(files[path]), delay);
+
+        console.log(`Read: %o, Waiting: %oms`, path, delay);
+      });
+    }
+  });
+
+  try {
+    console.log('Result: %o', Array.from(await bunder.parse(input)));
   } catch (error) {
     console.error(error);
   }
@@ -47,5 +53,4 @@ async function bunder(input) {
   console.timeEnd('Bundler');
 }
 
-bunder('1');
-console.log('Async');
+parse('/src/1.js');

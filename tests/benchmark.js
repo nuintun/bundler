@@ -4,28 +4,30 @@
  * @version 2018/01/29
  */
 
-const Bundler = require('../index');
+const Bundler = require('../');
 
 const files = {};
 const length = 100000;
 
 for (let i = 1; i < length; i++) {
-  const contents = String(i);
-  const dependencies = i < length - 3 ? [String(i + 1), String(i + 2), String(i + 3)] : [];
+  const path = `/src/${i}.js`;
+  const contents = `${path} contents`;
+  const dependencies = i < length - 3 ? [`/src/${i + 1}.js`, `/src/${i + 2}.js`, `/src/${i + 3}.js`] : [];
 
-  files[i] = { dependencies, contents };
+  files[path] = { dependencies, contents };
 }
 
-async function bunder(input) {
+async function parse(input) {
   console.time('Bundler');
 
+  const bunder = new Bundler({
+    cycle: false,
+    resolve: path => path,
+    parse: async path => files[path]
+  });
+
   try {
-    await new Bundler({
-      input,
-      cycle: false,
-      resolve: id => id,
-      parse: id => Promise.resolve(files[id])
-    });
+    await bunder.parse(input);
   } catch (error) {
     console.error(error);
   }
@@ -33,4 +35,4 @@ async function bunder(input) {
   console.timeEnd('Bundler');
 }
 
-bunder('1');
+parse('/src/1.js');

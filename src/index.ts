@@ -2,25 +2,15 @@
  * @module index
  */
 
-interface AnalysisResults {
+export interface ParseResult {
   readonly contents?: any;
   readonly dependencies: string[] | Set<string>;
 }
 
-interface Metadata {
+export interface Metadata {
   readonly path: string;
   readonly contents: any;
   readonly dependencies: Set<string>;
-}
-
-type parse = (path: string) => AnalysisResults;
-type resolve = (src: string, referer: string) => string;
-
-interface Options {
-  parse: parse;
-  cycle?: boolean;
-  resolve: resolve;
-  [key: string]: any;
 }
 
 interface File {
@@ -30,8 +20,18 @@ interface File {
   readonly dependencies: IterableIterator<string>;
 }
 
+type parse = (path: string) => ParseResult;
+type resolve = (src: string, referer: string) => string;
+
+interface Options {
+  parse: parse;
+  cycle?: boolean;
+  resolve: resolve;
+  [key: string]: any;
+}
+
 async function readFile(path: string, parse: parse, referer?: File): Promise<File> {
-  const { contents, dependencies: deps }: AnalysisResults = await parse(path);
+  const { contents, dependencies: deps }: ParseResult = await parse(path);
 
   let dependencies: Set<string>;
 
@@ -48,60 +48,65 @@ async function readFile(path: string, parse: parse, referer?: File): Promise<Fil
   return { path, referer, metadata, dependencies: dependencies.values() };
 }
 
-function assert(options: Options): void | never {
+function assert(options: Options): Options | never {
   // Assert resolve and parse
-  ['resolve', 'parse'].forEach((name: string) => {
-    if (options && typeof options[name] !== 'function') {
-      throw new TypeError(`The options.${name} must be a function`);
+  ['resolve', 'parse'].forEach((option: string) => {
+    if (options && typeof options[option] !== 'function') {
+      throw new TypeError(`The options.${option} must be a function`);
     }
   });
+
+  return options;
 }
 
 export default class Bundler {
-  private input: string;
   private options: Options;
-  private completed: Set<string> = new Set<string>();
-  private metadata: Set<Metadata> = new Set<Metadata>();
-  private waiting: Map<string, File> = new Map<string, File>();
 
-  constructor(input: string, options: Options) {
-    assert(options);
-
-    this.input = input;
-    this.options = options;
+  constructor(options: Options) {
+    this.options = assert(options);
   }
 
-  async pack(): Promise<Set<Metadata>> {
-    const { input, options, waiting, completed, metadata }: Bundler = this;
-    const { resolve, parse }: Options = options;
+  /**
+   * @public
+   * @method parse
+   * @param {string} input
+   * @description
+   * @returns {Promise<Set<Metadata>>}
+   */
+  async parse(input: string): Promise<Set<Metadata>> {
+    const waiting: Set<string> = new Set<string>();
+    const completed: Set<string> = new Set<string>();
+    const metadata: Set<Metadata> = new Set<Metadata>();
+    const { cycle, resolve, parse }: Options = this.options;
+
+    waiting.add(input);
 
     let current: File | undefined = await readFile(input, parse);
 
-    waiting.set(input, current);
-
     while (current) {
-      if (completed.has(current.path)) {
+      const { done, value }: IteratorResult<string> = current.dependencies.next();
+
+      if (done) {
+        const { path }: File = current;
+
+        waiting.delete(path);
+        metadata.add(current.metadata);
+        completed.add(path);
+
         current = current.referer;
       } else {
-        const { done, value }: IteratorResult<string> = current.dependencies.next();
+        const path: string = await resolve(value, current.path);
 
-        if (done) {
-          console.log(current.path, current.referer?.path);
-          waiting.delete(current.path);
-          completed.add(current.path);
-          metadata.add(current.metadata);
+        if (waiting.has(path)) {
+          // Allow circularly dependency
+          if (cycle) continue;
 
-          current = current.referer;
-        } else {
-          const path: string = await resolve(value, current.path);
+          // When not allowed cycle throw error
+          throw new ReferenceError(`Found circularly dependency ${value} at ${current.path}`);
+        } else if (!completed.has(path)) {
+          waiting.add(path);
 
-          if (waiting.has(path)) {
-            current = waiting.get(path);
-          } else {
-            current = await readFile(path, parse, current);
-
-            waiting.set(path, current);
-          }
+          current = await readFile(path, parse, current);
         }
       }
     }

@@ -22,10 +22,13 @@
     "url": "https://github.com/nuintun/bundler/issues"
   },
   "scripts": {
-    "build": "tsc --pretty"
+    "prepublishOnly": "npm run build",
+    "build": "rollup -c rollup.config.js"
   },
   "devDependencies": {
-    "typescript": "^3.8.3"
+    "rollup": "^2.8.2",
+    "typescript": "^3.8.3",
+    "rollup-plugin-typescript2": "^0.27.0"
   },
   "homepage": "https://github.com/nuintun/bundler#readme"
 }
