@@ -4,7 +4,7 @@
 
 export interface ParseResult {
   readonly contents?: any;
-  readonly dependencies: string[] | Set<string>;
+  readonly dependencies?: string[] | Set<string>;
 }
 
 export interface Metadata {

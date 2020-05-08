@@ -7,15 +7,15 @@
 const Bundler = require('../');
 
 const files = {
-  '/src/1.js': { dependencies: ['2.js', '4.js'], contents: 'file 1' },
-  '/src/2.js': { dependencies: ['./3.js', './5.js'], contents: 'file 2' },
-  '/src/3.js': { dependencies: ['/src/4.js', '/src/6.js'], contents: 'file 3' },
-  '/src/4.js': { dependencies: ['5.js', './7.js'], contents: 'file 4' },
-  '/src/5.js': { dependencies: ['6.js', '/src/8.js'], contents: 'file 5' },
-  '/src/6.js': { dependencies: ['./7.js', '/src/9.js'], contents: 'file 6' },
-  '/src/7.js': { dependencies: ['8.js'], contents: 'file 7' },
-  '/src/8.js': { dependencies: ['./9.js'], contents: 'file 8' },
-  '/src/9.js': { dependencies: ['/src/1.js'], contents: 'file 9' }
+  '/src/1.js': { contents: 'file 1', dependencies: ['2.js', '4.js'] },
+  '/src/2.js': { contents: 'file 2', dependencies: ['./3.js', './5.js'] },
+  '/src/3.js': { contents: 'file 3', dependencies: ['/src/4.js', '/src/6.js'] },
+  '/src/4.js': { contents: 'file 4', dependencies: ['5.js', './7.js'] },
+  '/src/5.js': { contents: 'file 5', dependencies: ['6.js', '/src/8.js'] },
+  '/src/6.js': { contents: 'file 6', dependencies: ['./7.js', '/src/9.js'] },
+  '/src/7.js': { contents: 'file 7', dependencies: ['8.js'] },
+  '/src/8.js': { contents: 'file 8', dependencies: ['./9.js'] },
+  '/src/9.js': { contents: 'file 9', dependencies: ['/src/1.js'] }
 };
 
 // npm test allow-cycle

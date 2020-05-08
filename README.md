@@ -8,11 +8,7 @@
 
 ### API
 
-> #### new Bundler(options: Object)
->
-> options.input: string
->
-> > path of input file
+> #### new Bundler(options: Object) => Bundler
 >
 > options.cycle: boolean
 >
@@ -22,9 +18,15 @@
 >
 > > path resolve function
 >
-> options.parse(path: string) => { dependencies?: Array|Set, contents?: any }
+> options.parse(path: string) => { contents?: any, dependencies?: string[]|Set<string\> }
 >
 > > file dependencies parse function
+>
+> #### new Bundler(options: Object).parse(input: string) => Promise<Set<Metadata\>\>
+>
+> input: string
+>
+> > path of input file
 
 ### Examples
 
@@ -32,43 +34,94 @@
 const Bundler = require('@nuintun/bundler');
 
 const files = {
-  1: { dependencies: ['2', '3'], contents: '1' },
-  2: { dependencies: ['3', '4'], contents: '2' },
-  3: { dependencies: ['4', '5'], contents: '3' },
-  4: { dependencies: ['5', '6'], contents: '4' },
-  5: { dependencies: ['6'], contents: '5' },
-  6: { dependencies: ['7'], contents: '6' },
-  7: { dependencies: ['8'], contents: '7' },
-  8: { dependencies: [], contents: '8' }
+  '/src/1.js': { contents: 'file 1', dependencies: ['2.js', '4.js'] },
+  '/src/2.js': { contents: 'file 2', dependencies: ['./3.js', './5.js'] },
+  '/src/3.js': { contents: 'file 3', dependencies: ['/src/4.js', '/src/6.js'] },
+  '/src/4.js': { contents: 'file 4', dependencies: ['5.js', './7.js'] },
+  '/src/5.js': { contents: 'file 5', dependencies: ['6.js', '/src/8.js'] },
+  '/src/6.js': { contents: 'file 6', dependencies: ['./7.js', '/src/9.js'] },
+  '/src/7.js': { contents: 'file 7', dependencies: ['8.js'] },
+  '/src/8.js': { contents: 'file 8', dependencies: ['./9.js'] },
+  '/src/9.js': { contents: 'file 9', dependencies: [] }
 };
 
-async function bunder(input) {
+const bunder = new Bundler({
+  resolve: (path, referer) => {
+    if (/^\//.test(path)) return path;
+
+    const dirname = referer.replace(/\/[^\/]+$/, '');
+
+    return `${dirname}/${path}`.replace(/(\.\/)+/g, '');
+  },
+  parse: path => {
+    return new Promise(resolve => {
+      const delay = 20;
+
+      setTimeout(() => resolve(files[path]), delay);
+
+      console.log(`Read: %o, Waiting: %oms`, path, delay);
+    });
+  }
+});
+
+async function parse(input) {
   try {
-    console.log(
-      await new Bundler({
-        input,
-        cycle: true,
-        resolve: id => id,
-        parse: id => Promise.resolve(files[id])
-      })
-    );
+    console.log(await bunder.parse(input));
   } catch (error) {
     console.error(error);
   }
 }
 
-bunder('1');
+parse('/src/1.js');
 
 // Output:
-// Set {
-//   File { path: '8', dependencies: Set {}, contents: '8' },
-//   File { path: '7', dependencies: Set { '8' }, contents: '7' },
-//   File { path: '6', dependencies: Set { '7' }, contents: '6' },
-//   File { path: '5', dependencies: Set { '6' }, contents: '5' },
-//   File { path: '4', dependencies: Set { '5', '6' }, contents: '4' },
-//   File { path: '3', dependencies: Set { '4', '5' }, contents: '3' },
-//   File { path: '2', dependencies: Set { '3', '4' }, contents: '2' },
-//   File { path: '1', dependencies: Set { '2', '3' }, contents: '1' } }
+// Set(9) {
+//  {
+//    path: '/src/9.js',
+//    contents: 'file 9',
+//    dependencies: Set(0) {}
+//  },
+//  {
+//    path: '/src/8.js',
+//    contents: 'file 8',
+//    dependencies: Set(1) { './9.js' }
+//  },
+//  {
+//    path: '/src/7.js',
+//    contents: 'file 7',
+//    dependencies: Set(1) { '8.js' }
+//  },
+//  {
+//    path: '/src/6.js',
+//    contents: 'file 6',
+//    dependencies: Set(2) { './7.js', '/src/9.js' }
+//  },
+//  {
+//    path: '/src/5.js',
+//    contents: 'file 5',
+//    dependencies: Set(2) { '6.js', '/src/8.js' }
+//  },
+//  {
+//    path: '/src/4.js',
+//    contents: 'file 4',
+//    dependencies: Set(2) { '5.js', './7.js' }
+//  },
+//  {
+//    path: '/src/3.js',
+//    contents: 'file 3',
+//    dependencies: Set(2) { '/src/4.js', '/src/6.js' }
+//  },
+//  {
+//    path: '/src/2.js',
+//    contents: 'file 2',
+//    dependencies: Set(2) { './3.js', './5.js' }
+//  },
+//  {
+//    path: '/src/1.js',
+//    contents: 'file 1',
+//    dependencies: Set(2) { '2.js', '4.js' }
+//  }
+//}
 ```
 
 [npm-image]: https://img.shields.io/npm/v/@nuintun/bundler.svg?style=flat-square
