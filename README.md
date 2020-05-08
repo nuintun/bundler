@@ -18,11 +18,11 @@
 >
 > > path resolve function
 >
-> options.parse(path: string) => { contents?: any, dependencies?: string[]|Set<string\> }
+> options.parse(path: string) => { contents?: any, dependencies?: string[] }
 >
 > > file dependencies parse function
 >
-> #### new Bundler(options: Object).parse(input: string) => Promise<Set<Metadata\>\>
+> #### new Bundler(options: Object).parse(input: string) => Promise<Metadata[]\>
 >
 > input: string
 >
@@ -74,54 +74,53 @@ async function parse(input) {
 
 parse('/src/1.js');
 
-// Output:
-// Set(9) {
+// Output: [
 //  {
 //    path: '/src/9.js',
 //    contents: 'file 9',
-//    dependencies: Set(0) {}
+//    dependencies: []
 //  },
 //  {
 //    path: '/src/8.js',
 //    contents: 'file 8',
-//    dependencies: Set(1) { './9.js' }
+//    dependencies: ['./9.js']
 //  },
 //  {
 //    path: '/src/7.js',
 //    contents: 'file 7',
-//    dependencies: Set(1) { '8.js' }
+//    dependencies: ['8.js']
 //  },
 //  {
 //    path: '/src/6.js',
 //    contents: 'file 6',
-//    dependencies: Set(2) { './7.js', '/src/9.js' }
+//    dependencies: ['./7.js', '/src/9.js']
 //  },
 //  {
 //    path: '/src/5.js',
 //    contents: 'file 5',
-//    dependencies: Set(2) { '6.js', '/src/8.js' }
+//    dependencies: ['6.js', '/src/8.js']
 //  },
 //  {
 //    path: '/src/4.js',
 //    contents: 'file 4',
-//    dependencies: Set(2) { '5.js', './7.js' }
+//    dependencies: ['5.js', './7.js']
 //  },
 //  {
 //    path: '/src/3.js',
 //    contents: 'file 3',
-//    dependencies: Set(2) { '/src/4.js', '/src/6.js' }
+//    dependencies: ['/src/4.js', '/src/6.js']
 //  },
 //  {
 //    path: '/src/2.js',
 //    contents: 'file 2',
-//    dependencies: Set(2) { './3.js', './5.js' }
+//    dependencies: ['./3.js', './5.js']
 //  },
 //  {
 //    path: '/src/1.js',
 //    contents: 'file 1',
-//    dependencies: Set(2) { '2.js', '4.js' }
+//    dependencies: ['2.js', '4.js']
 //  }
-//}
+//]
 ```
 
 [npm-image]: https://img.shields.io/npm/v/@nuintun/bundler.svg?style=flat-square

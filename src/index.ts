@@ -4,20 +4,20 @@
 
 export interface ParseResult {
   readonly contents?: any;
-  readonly dependencies?: string[] | Set<string>;
+  readonly dependencies?: string[];
 }
 
 export interface Metadata {
   readonly path: string;
   readonly contents: any;
-  readonly dependencies: Set<string>;
+  readonly dependencies: string[];
 }
 
 interface File {
   readonly path: string;
   readonly referer?: File;
   readonly metadata: Metadata;
-  readonly dependencies: IterableIterator<string>;
+  readonly dependencies: IterableIterator<[number, string]>;
 }
 
 type parse = (path: string) => ParseResult;
@@ -32,20 +32,10 @@ interface Options {
 
 async function readFile(path: string, parse: parse, referer?: File): Promise<File> {
   const { contents, dependencies: deps }: ParseResult = await parse(path);
-
-  let dependencies: Set<string>;
-
-  if (deps instanceof Set) {
-    dependencies = deps;
-  } else if (Array.isArray(deps)) {
-    dependencies = new Set(deps);
-  } else {
-    dependencies = new Set<string>();
-  }
-
+  const dependencies: string[] = Array.isArray(deps) ? deps : [];
   const metadata: Metadata = { path, contents, dependencies };
 
-  return { path, referer, metadata, dependencies: dependencies.values() };
+  return { path, referer, metadata, dependencies: dependencies.entries() };
 }
 
 function assert(options: Options): Options | never {
@@ -73,10 +63,10 @@ export default class Bundler {
    * @description
    * @returns {Promise<Set<Metadata>>}
    */
-  async parse(input: string): Promise<Set<Metadata>> {
+  async parse(input: string): Promise<Metadata[]> {
+    const metadata: Metadata[] = [];
     const waiting: Set<string> = new Set<string>();
     const completed: Set<string> = new Set<string>();
-    const metadata: Set<Metadata> = new Set<Metadata>();
     const { cycle, resolve, parse }: Options = this.options;
 
     waiting.add(input);
@@ -84,25 +74,28 @@ export default class Bundler {
     let current: File | undefined = await readFile(input, parse);
 
     while (current) {
-      const { done, value }: IteratorResult<string> = current.dependencies.next();
+      const { done, value: entry }: IteratorResult<[number, string]> = current.dependencies.next();
 
       if (done) {
         const { path }: File = current;
 
+        metadata.push(current.metadata);
+
         waiting.delete(path);
-        metadata.add(current.metadata);
+
         completed.add(path);
 
         current = current.referer;
       } else {
-        const path: string = await resolve(value, current.path);
+        const [, src]: [number, string] = entry;
+        const path: string = await resolve(src, current.path);
 
         if (waiting.has(path)) {
           // Allow circularly dependency
           if (cycle) continue;
 
           // When not allowed cycle throw error
-          throw new ReferenceError(`Found circularly dependency ${value} at ${current.path}`);
+          throw new ReferenceError(`Found circularly dependency ${src} at ${current.path}`);
         } else if (!completed.has(path)) {
           waiting.add(path);
 
