@@ -52,7 +52,7 @@ async function parse(input) {
   });
 
   try {
-    console.log('Result: %o', Array.from(await bunder.parse(input)));
+    console.log('Result: %o', await bunder.parse(input));
   } catch (error) {
     console.error(error);
   }
