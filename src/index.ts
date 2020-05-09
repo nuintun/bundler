@@ -1,41 +1,115 @@
 /**
- * @module index
+ * @module Bunder
  */
 
-type resolve = (src: string, referer: string) => string;
-type parse = (path: string) => void | ParseResult | Promise<void | ParseResult>;
+type dependencies = string[];
+type FileList = FastMap<File>;
+type DependencyGraph = FastMap<Set<string>>;
+type setMarkedNode = (path: string, referer: string | null) => string;
+type updateGraphNode = (referer: string | null, path: string) => void;
+type drawGraphNode = (src: string, referer: string | null) => Promise<void>;
+type drawDependencyGraph = (src: string, referer: string | null) => Promise<[DependencyGraph, FileList]>;
 
-export interface ParseResult {
-  readonly contents?: any;
-  readonly dependencies?: string[];
-}
+export type resolve = (src: string, referer: string) => string;
+export type parse = (path: string) => void | ParseResult | Promise<void | ParseResult>;
 
-export interface Metadata {
-  readonly path: string;
-  readonly contents: any;
-  readonly dependencies: string[];
-}
-
-interface File {
-  readonly path: string;
-  readonly metadata: Metadata;
-  readonly referer: File | null;
-  readonly dependencies: IterableIterator<[number, string]>;
-}
-
-interface Options {
+export interface Options {
   parse: parse;
   cycle?: boolean;
   resolve: resolve;
   [key: string]: any;
 }
 
-async function readFile(path: string, parse: parse, referer: File | null): Promise<File> {
-  const { contents, dependencies: deps }: ParseResult = (await parse(path)) || {};
-  const dependencies: string[] = Array.isArray(deps) ? deps : [];
-  const metadata: Metadata = { path, contents, dependencies };
+export interface ParseResult {
+  readonly contents?: any;
+  readonly dependencies?: dependencies;
+}
 
-  return { path, referer, metadata, dependencies: dependencies.entries() };
+export interface File {
+  readonly path: string;
+  readonly contents: any;
+  readonly dependencies: dependencies;
+}
+
+interface MarkedNode {
+  readonly referer: string | null;
+  readonly dependencies: IterableIterator<string>;
+}
+
+const { hasOwnProperty }: Object = Object.prototype;
+
+class FastMap<T> {
+  private map: { [key: string]: T } = Object.create(null);
+
+  set(key: string, value: T): void {
+    this.map[key] = value;
+  }
+
+  get(key: string): T {
+    return this.map[key];
+  }
+
+  has(key: string): boolean {
+    return hasOwnProperty.call(this.map, key);
+  }
+}
+
+async function readFile(path: string, parse: parse): Promise<File> {
+  const { contents = null, dependencies }: ParseResult = (await parse(path)) || {};
+
+  return { path, contents, dependencies: Array.isArray(dependencies) ? dependencies : [] };
+}
+
+function drawDependencyGraph(input: string, options: Options): Promise<[DependencyGraph, FileList]> {
+  return new Promise<[DependencyGraph, FileList]>((resolve, reject) => {
+    let remaining: number = 0;
+    let hasError: boolean = false;
+
+    const files: FileList = new FastMap();
+    const graph: DependencyGraph = new FastMap();
+
+    const updateGraphNode: updateGraphNode = (referer, path) => {
+      referer !== null && graph.get(referer).add(path);
+    };
+
+    const drawGraphNode: drawGraphNode = async (src, referer) => {
+      try {
+        if (!hasError) {
+          remaining++;
+
+          const path: string = referer !== null ? await options.resolve(src, referer) : src;
+
+          if (!graph.has(path)) {
+            graph.set(path, new Set());
+
+            updateGraphNode(referer, path);
+
+            const file: File = await readFile(path, options.parse);
+
+            files.set(path, file);
+
+            for (const src of file.dependencies) {
+              drawGraphNode(src, path);
+            }
+          } else {
+            updateGraphNode(referer, path);
+          }
+
+          remaining--;
+
+          if (!remaining) {
+            resolve([graph, files]);
+          }
+        }
+      } catch (error) {
+        hasError = true;
+
+        reject(error);
+      }
+    };
+
+    drawGraphNode(input, null);
+  });
 }
 
 function assert(options: Options): never | Options {
@@ -60,50 +134,51 @@ export default class Bundler {
    * @public
    * @method parse
    * @param {string} input
-   * @returns {Promise<Metadata[]>}
+   * @returns {Promise<File[]>}
    * @description Get the list of dependent files of input file
    */
-  async parse(input: string): Promise<Metadata[]> {
-    const metadata: Metadata[] = [];
-    const waiting: Set<string> = new Set<string>();
-    const completed: Set<string> = new Set<string>();
-    const { cycle, resolve, parse }: Options = this.options;
+  async parse(input: string): Promise<File[]> {
+    const output: File[] = [];
+    const { options }: Bundler = this;
+    const waiting: Set<string> = new Set();
+    const marked: FastMap<MarkedNode> = new FastMap();
+    const [graph, files]: [DependencyGraph, FileList] = await drawDependencyGraph(input, options);
 
-    waiting.add(input);
+    const setMarkedNode: setMarkedNode = (path, referer) => {
+      waiting.add(path);
 
-    let current: File | null = await readFile(input, parse, null);
+      marked.set(path, { referer, dependencies: graph.get(path).values() });
+
+      return path;
+    };
+
+    let current: string | null = setMarkedNode(input, null);
 
     while (current !== null) {
-      const { done, value: entry }: IteratorResult<[number, string]> = current.dependencies.next();
+      const node: MarkedNode = marked.get(current);
+      const { done, value: path }: IteratorResult<string> = node.dependencies.next();
 
       if (done) {
-        const { path }: File = current;
+        waiting.delete(current);
 
-        metadata.push(current.metadata);
+        output.push(files.get(current));
 
-        waiting.delete(path);
-
-        completed.add(path);
-
-        current = current.referer;
+        current = marked.get(current).referer;
       } else {
-        const [, src]: [number, string] = entry;
-        const path: string = await resolve(src, current.path);
-
         if (waiting.has(path)) {
           // Allow circularly dependency
-          if (cycle) continue;
+          if (options.cycle) continue;
 
           // When not allowed cycle throw error
-          throw new ReferenceError(`Found circularly dependency ${src} at ${current.path}`);
-        } else if (!completed.has(path)) {
-          waiting.add(path);
+          throw new ReferenceError(`Found circularly dependency ${path} at ${current}`);
+        }
 
-          current = await readFile(path, parse, current);
+        if (!marked.has(path)) {
+          current = setMarkedNode(path, current);
         }
       }
     }
 
-    return metadata;
+    return output;
   }
 }
