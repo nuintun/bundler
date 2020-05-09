@@ -1,5 +1,5 @@
 /**
- * @module Bunder
+ * @module index
  */
 
 type dependencies = string[];
