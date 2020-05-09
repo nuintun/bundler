@@ -42,7 +42,7 @@ async function parse(input) {
     },
     parse: path => {
       return new Promise(resolve => {
-        const delay = getRandom(10, 1000);
+        const delay = getRandom(10, 100);
 
         setTimeout(() => resolve(files[path]), delay);
 
