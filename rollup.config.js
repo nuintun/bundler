@@ -22,7 +22,7 @@ const banner = `/**
 const tsconfigOverride = { compilerOptions: { declaration: true, declarationDir: 'typings' } };
 
 export default {
-  input: 'src/Bunder.ts',
+  input: 'src/index.ts',
   output: {
     banner,
     indent: true,

@@ -23,7 +23,7 @@ async function parse(input) {
   const bunder = new Bundler({
     cycle: false,
     resolve: path => path,
-    parse: async path => files[path]
+    parse: path => files[path]
   });
 
   try {

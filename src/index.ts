@@ -2,6 +2,9 @@
  * @module index
  */
 
+type resolve = (src: string, referer: string) => string;
+type parse = (path: string) => void | ParseResult | Promise<void | ParseResult>;
+
 export interface ParseResult {
   readonly contents?: any;
   readonly dependencies?: string[];
@@ -15,13 +18,10 @@ export interface Metadata {
 
 interface File {
   readonly path: string;
-  readonly referer?: File;
   readonly metadata: Metadata;
+  readonly referer: File | null;
   readonly dependencies: IterableIterator<[number, string]>;
 }
-
-type parse = (path: string) => ParseResult;
-type resolve = (src: string, referer: string) => string;
 
 interface Options {
   parse: parse;
@@ -30,15 +30,15 @@ interface Options {
   [key: string]: any;
 }
 
-async function readFile(path: string, parse: parse, referer?: File): Promise<File> {
-  const { contents, dependencies: deps }: ParseResult = await parse(path);
+async function readFile(path: string, parse: parse, referer: File | null): Promise<File> {
+  const { contents, dependencies: deps }: ParseResult = (await parse(path)) || {};
   const dependencies: string[] = Array.isArray(deps) ? deps : [];
   const metadata: Metadata = { path, contents, dependencies };
 
   return { path, referer, metadata, dependencies: dependencies.entries() };
 }
 
-function assert(options: Options): Options | never {
+function assert(options: Options): never | Options {
   // Assert resolve and parse
   ['resolve', 'parse'].forEach((option: string) => {
     if (options && typeof options[option] !== 'function') {
@@ -60,8 +60,8 @@ export default class Bundler {
    * @public
    * @method parse
    * @param {string} input
-   * @description
-   * @returns {Promise<Set<Metadata>>}
+   * @returns {Promise<Metadata[]>}
+   * @description Get the list of dependent files of input file
    */
   async parse(input: string): Promise<Metadata[]> {
     const metadata: Metadata[] = [];
@@ -71,9 +71,9 @@ export default class Bundler {
 
     waiting.add(input);
 
-    let current: File | undefined = await readFile(input, parse);
+    let current: File | null = await readFile(input, parse, null);
 
-    while (current) {
+    while (current !== null) {
       const { done, value: entry }: IteratorResult<[number, string]> = current.dependencies.next();
 
       if (done) {
