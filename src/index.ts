@@ -28,8 +28,11 @@ export interface File {
   readonly dependencies: dependencies;
 }
 
-interface MarkedNode extends File {
+interface MarkedNode {
+  readonly path: string;
+  readonly contents: any;
   readonly referer: MarkedNode | null;
+  readonly dependencies: dependencies;
   readonly dependencyPaths: IterableIterator<string>;
 }
 
@@ -45,10 +48,10 @@ const { hasOwnProperty }: Object = Object.prototype;
 class FastMap<T> {
   public map: { [key: string]: T } = Object.create(null);
 
-  set(key: string, value: T): T {
+  set(key: string, value: T): FastMap<T> {
     this.map[key] = value;
 
-    return value;
+    return this;
   }
 
   get(key: string): T {
@@ -159,16 +162,18 @@ export default class Bundler {
 
     const output: File[] = [];
     const { options }: Bundler = this;
+    const marked: Set<string> = new Set();
     const waiting: Set<string> = new Set();
-    const marked: FastMap<MarkedNode> = new FastMap();
     const graph: DependencyGraph = await drawDependencyGraph(input, options);
 
     const setMarked: setMarked = (path, referer) => {
+      marked.add(path);
+
       waiting.add(path);
 
       const { contents, dependencies, dependencyPaths }: GraphNode = graph.get(path);
 
-      return marked.set(path, { path, referer, contents, dependencies, dependencyPaths: dependencyPaths.values() });
+      return { path, referer, contents, dependencies, dependencyPaths: dependencyPaths.values() };
     };
 
     let current: MarkedNode | null = setMarked(input, null);
