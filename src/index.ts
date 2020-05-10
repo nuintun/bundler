@@ -4,7 +4,7 @@
 
 type dependencies = string[];
 type DependencyGraph = FastMap<GraphNode>;
-type setMarked = (path: string, referer: MarkedNode | null) => MarkedNode;
+type setMark = (path: string, referer: MarkNode | null) => MarkNode;
 type drawGraphNode = (src: string, referer: string | null) => Promise<void>;
 
 export type resolve = (src: string, referer: string) => string;
@@ -28,10 +28,10 @@ export interface File {
   readonly dependencies: dependencies;
 }
 
-interface MarkedNode {
+interface MarkNode {
   readonly path: string;
   readonly contents: any;
-  readonly referer: MarkedNode | null;
+  readonly referer: MarkNode | null;
   readonly dependencies: dependencies;
   readonly dependencyPaths: IterableIterator<string>;
 }
@@ -166,7 +166,7 @@ export default class Bundler {
     const waiting: Set<string> = new Set();
     const graph: DependencyGraph = await drawDependencyGraph(input, options);
 
-    const setMarked: setMarked = (path, referer) => {
+    const setMark: setMark = (path, referer) => {
       marked.add(path);
 
       waiting.add(path);
@@ -176,13 +176,13 @@ export default class Bundler {
       return { path, referer, contents, dependencies, dependencyPaths: dependencyPaths.values() };
     };
 
-    let current: MarkedNode | null = setMarked(input, null);
+    let current: MarkNode | null = setMark(input, null);
 
     while (current !== null) {
       const { done, value: path }: IteratorResult<string> = current.dependencyPaths.next();
 
       if (done) {
-        const { path, contents, dependencies }: MarkedNode = current;
+        const { path, contents, dependencies }: MarkNode = current;
 
         waiting.delete(path);
 
@@ -199,7 +199,7 @@ export default class Bundler {
         }
 
         if (!marked.has(path)) {
-          current = setMarked(path, current);
+          current = setMark(path, current);
         }
       }
     }
