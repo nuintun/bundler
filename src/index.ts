@@ -195,7 +195,7 @@ export default class Bundler {
           if (options.cycle) continue;
 
           // When not allowed cycle throw error
-          throw new ReferenceError(`Found circularly dependency ${path} at ${current}`);
+          throw new ReferenceError(`Found circularly dependency ${path} at ${current.path}`);
         }
 
         if (!marked.has(path)) {
