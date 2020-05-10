@@ -4,7 +4,6 @@
 
 type dependencies = string[];
 type FileList = FastMap<File>;
-type throwError = (error: Error) => void;
 type DependencyGraph = FastMap<Set<string>>;
 type setMarkedNode = (path: string, referer: string | null) => string;
 type updateGraphNode = (referer: string | null, path: string) => void;
@@ -73,47 +72,35 @@ function drawDependencyGraph(input: string, options: Options): Promise<[Dependen
       referer !== null && graph.get(referer).add(path);
     };
 
-    const throwError: throwError = error => {
-      hasError = true;
-
-      return reject(error);
-    };
-
     const drawGraphNode: drawGraphNode = async (src, referer) => {
       if (!hasError) {
         remaining++;
 
-        let path: string;
-
         try {
-          path = referer !== null ? await options.resolve(src, referer) : src;
+          const path: string = referer !== null ? await options.resolve(src, referer) : src;
+
+          if (!graph.has(path)) {
+            graph.set(path, new Set());
+
+            updateGraphNode(referer, path);
+
+            const file: File = await readFile(path, options.parse);
+
+            files.set(path, file);
+
+            for (const src of file.dependencies) {
+              drawGraphNode(src, path);
+            }
+          } else {
+            updateGraphNode(referer, path);
+          }
         } catch (error) {
-          return throwError(error);
+          hasError = true;
+
+          return reject(error);
         }
 
-        if (!graph.has(path)) {
-          graph.set(path, new Set());
-
-          updateGraphNode(referer, path);
-
-          let file: File;
-
-          try {
-            file = await readFile(path, options.parse);
-          } catch (error) {
-            return throwError(error);
-          }
-
-          files.set(path, file);
-
-          for (const src of file.dependencies) {
-            drawGraphNode(src, path);
-          }
-        } else {
-          updateGraphNode(referer, path);
-        }
-
-        if (!--remaining && !hasError) {
+        if (!hasError && !--remaining) {
           return resolve([graph, files]);
         }
       }
