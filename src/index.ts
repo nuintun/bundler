@@ -79,6 +79,10 @@ function drawDependencyGraph(input: string, options: Options): Promise<[Dependen
         try {
           const path: string = referer !== null ? options.resolve(src, referer) : src;
 
+          if (path !== '' && path.constructor !== String) {
+            throw new TypeError('The options.resolve must be return a string');
+          }
+
           if (!graph.has(path)) {
             graph.set(path, new Set());
 
