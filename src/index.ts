@@ -5,7 +5,7 @@
 type dependencies = string[];
 type FileList = FastMap<File>;
 type DependencyGraph = FastMap<Set<string>>;
-type setMarkedNode = (path: string, referer: string | null) => string;
+type setMarked = (path: string, referer: string | null) => string;
 type updateGraphNode = (referer: string | null, path: string) => void;
 type drawGraphNode = (src: string, referer: string | null) => Promise<void>;
 type drawDependencyGraph = (src: string, referer: string | null) => Promise<[DependencyGraph, FileList]>;
@@ -142,7 +142,7 @@ export default class Bundler {
     const marked: FastMap<MarkedNode> = new FastMap();
     const [graph, files]: [DependencyGraph, FileList] = await drawDependencyGraph(input, options);
 
-    const setMarkedNode: setMarkedNode = (path, referer) => {
+    const setMarked: setMarked = (path, referer) => {
       waiting.add(path);
 
       marked.set(path, { referer, dependencies: graph.get(path).values() });
@@ -150,7 +150,7 @@ export default class Bundler {
       return path;
     };
 
-    let current: string | null = setMarkedNode(input, null);
+    let current: string | null = setMarked(input, null);
 
     while (current !== null) {
       const node: MarkedNode = marked.get(current);
@@ -172,7 +172,7 @@ export default class Bundler {
         }
 
         if (!marked.has(path)) {
-          current = setMarkedNode(path, current);
+          current = setMarked(path, current);
         }
       }
     }
