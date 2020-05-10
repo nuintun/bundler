@@ -14,15 +14,15 @@
 >
 > > support circularly dependency
 >
-> options.resolve(path: string, referer: string) => path: string
+> options.resolve(path: string, referer: string) => string
 >
 > > path resolve function
 >
 > options.parse(path: string) => { contents?: any, dependencies?: string[] }
 >
-> > file dependencies parse function
+> > file dependencies parse function, support async function
 >
-> #### new Bundler(options: Object).parse(input: string) => Promise<Metadata[]\>
+> #### new Bundler(options: Object).parse(input: string) => Promise<File[]\>
 >
 > input: string
 >
