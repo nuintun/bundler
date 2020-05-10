@@ -33,14 +33,14 @@ interface MarkNode {
   readonly contents: any;
   readonly referer: MarkNode | null;
   readonly dependencies: dependencies;
-  readonly imports: IterableIterator<string>;
+  readonly references: IterableIterator<string>;
 }
 
 class GraphNode {
   public path: string;
   public contents: any;
   public dependencies: dependencies;
-  public imports: Set<string> = new Set();
+  public references: Set<string> = new Set();
 }
 
 const { hasOwnProperty }: Object = Object.prototype;
@@ -106,7 +106,7 @@ function drawDependencyGraph(input: string, options: Options): Promise<Dependenc
 
           // Add dependency path to referer
           if (referer !== null) {
-            graph.get(referer).imports.add(path);
+            graph.get(referer).references.add(path);
           }
 
           // Read file and parse dependencies
@@ -170,15 +170,15 @@ export default class Bundler {
 
       waiting.add(path);
 
-      const { contents, dependencies, imports }: GraphNode = graph.get(path);
+      const { contents, dependencies, references }: GraphNode = graph.get(path);
 
-      return { path, referer, contents, dependencies, imports: imports.values() };
+      return { path, referer, contents, dependencies, references: references.values() };
     };
 
     let current: MarkNode | null = setMark(input, null);
 
     while (current !== null) {
-      const { done, value: path }: IteratorResult<string> = current.imports.next();
+      const { done, value: path }: IteratorResult<string> = current.references.next();
 
       if (done) {
         const { path, contents, dependencies }: MarkNode = current;
