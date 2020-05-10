@@ -4,10 +4,10 @@
 
 type dependencies = string[];
 type DependencyGraph = FastMap<GraphNode>;
-type setMark = (path: string, referer: MarkNode | null) => MarkNode;
-type drawGraphNode = (src: string, referer: string | null) => Promise<void>;
+type setMark = (path: string, referrer: MarkNode | null) => MarkNode;
+type drawGraphNode = (src: string, referrer: string | null) => Promise<void>;
 
-export type resolve = (src: string, referer: string) => string;
+export type resolve = (src: string, referrer: string) => string;
 export type parse = (path: string) => void | ParseResult | Promise<void | ParseResult>;
 
 export interface Options {
@@ -31,7 +31,7 @@ export interface File {
 interface MarkNode {
   readonly path: string;
   readonly contents: any;
-  readonly referer: MarkNode | null;
+  readonly referrer: MarkNode | null;
   readonly dependencies: dependencies;
   readonly references: IterableIterator<string>;
 }
@@ -94,19 +94,19 @@ function drawDependencyGraph(input: string, options: Options): Promise<Dependenc
     const { resolve, parse }: Options = options;
     const graph: DependencyGraph = new FastMap();
 
-    const drawGraphNode: drawGraphNode = async (src, referer) => {
+    const drawGraphNode: drawGraphNode = async (src, referrer) => {
       if (!hasError) {
         remaining++;
 
         try {
-          const path: string = referer !== null ? resolve(src, referer) : src;
+          const path: string = referrer !== null ? resolve(src, referrer) : src;
 
           // Assert path
           pathAssert(path, 'The options.resolve must be return a non empty string');
 
-          // Add dependency path to referer
-          if (referer !== null) {
-            graph.get(referer).references.add(path);
+          // Add dependency path to referrer
+          if (referrer !== null) {
+            graph.get(referrer).references.add(path);
           }
 
           // Read file and parse dependencies
@@ -165,14 +165,14 @@ export default class Bundler {
     const waiting: Set<string> = new Set();
     const graph: DependencyGraph = await drawDependencyGraph(input, options);
 
-    const setMark: setMark = (path, referer) => {
+    const setMark: setMark = (path, referrer) => {
       marked.add(path);
 
       waiting.add(path);
 
       const { contents, dependencies, references }: GraphNode = graph.get(path);
 
-      return { path, referer, contents, dependencies, references: references.values() };
+      return { path, referrer, contents, dependencies, references: references.values() };
     };
 
     let current: MarkNode | null = setMark(input, null);
@@ -187,7 +187,7 @@ export default class Bundler {
 
         output.push({ path, contents, dependencies });
 
-        current = current.referer;
+        current = current.referrer;
       } else {
         if (waiting.has(path)) {
           // Allow circularly dependency
