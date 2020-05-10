@@ -3,12 +3,9 @@
  */
 
 type dependencies = string[];
-type FileList = FastMap<File>;
-type DependencyGraph = FastMap<Set<string>>;
-type setMarked = (path: string, referer: string | null) => string;
-type updateGraphNode = (referer: string | null, path: string) => void;
+type DependencyGraph = FastMap<GraphNode>;
+type setMarked = (path: string, referer: MarkedNode | null) => MarkedNode;
 type drawGraphNode = (src: string, referer: string | null) => Promise<void>;
-type drawDependencyGraph = (src: string, referer: string | null) => Promise<[DependencyGraph, FileList]>;
 
 export type resolve = (src: string, referer: string) => string;
 export type parse = (path: string) => void | ParseResult | Promise<void | ParseResult>;
@@ -31,18 +28,27 @@ export interface File {
   readonly dependencies: dependencies;
 }
 
-interface MarkedNode {
-  readonly referer: string | null;
-  readonly dependencies: IterableIterator<string>;
+interface MarkedNode extends File {
+  readonly referer: MarkedNode | null;
+  readonly dependencyPaths: IterableIterator<string>;
+}
+
+class GraphNode {
+  public path: string;
+  public contents: any;
+  public dependencies: dependencies;
+  public dependencyPaths: Set<string> = new Set();
 }
 
 const { hasOwnProperty }: Object = Object.prototype;
 
 class FastMap<T> {
-  private map: { [key: string]: T } = Object.create(null);
+  public map: { [key: string]: T } = Object.create(null);
 
-  set(key: string, value: T): void {
+  set(key: string, value: T): T {
     this.map[key] = value;
+
+    return value;
   }
 
   get(key: string): T {
@@ -77,50 +83,54 @@ function pathAssert(path: string, message: string): void | never {
   }
 }
 
-function drawDependencyGraph(input: string, options: Options): Promise<[DependencyGraph, FileList]> {
-  return new Promise<[DependencyGraph, FileList]>((resolve, reject) => {
+function drawDependencyGraph(input: string, options: Options): Promise<DependencyGraph> {
+  return new Promise<DependencyGraph>((pResolve, pReject) => {
     let remaining: number = 0;
     let hasError: boolean = false;
 
-    const files: FileList = new FastMap();
+    const { resolve, parse }: Options = options;
     const graph: DependencyGraph = new FastMap();
-
-    const updateGraphNode: updateGraphNode = (referer, path) => {
-      referer !== null && graph.get(referer).add(path);
-    };
 
     const drawGraphNode: drawGraphNode = async (src, referer) => {
       if (!hasError) {
         remaining++;
 
         try {
-          const path: string = referer !== null ? options.resolve(src, referer) : src;
+          const path: string = referer !== null ? resolve(src, referer) : src;
 
+          // Assert path
           pathAssert(path, 'The options.resolve must be return a non empty string');
 
+          // Add dependency path to referer
+          if (referer !== null) {
+            graph.get(referer).dependencyPaths.add(path);
+          }
+
+          // Read file and parse dependencies
           if (!graph.has(path)) {
-            graph.set(path, new Set());
+            const node: GraphNode = new GraphNode();
 
-            updateGraphNode(referer, path);
+            node.path = path;
 
-            const file: File = await readFile(path, options.parse);
+            graph.set(path, node);
 
-            files.set(path, file);
+            const { contents, dependencies }: File = await readFile(path, parse);
 
-            for (const src of file.dependencies) {
+            node.contents = contents;
+            node.dependencies = dependencies;
+
+            for (const src of dependencies) {
               drawGraphNode(src, path);
             }
-          } else {
-            updateGraphNode(referer, path);
           }
         } catch (error) {
           hasError = true;
 
-          return reject(error);
+          return pReject(error);
         }
 
         if (!hasError && !--remaining) {
-          return resolve([graph, files]);
+          return pResolve(graph);
         }
       }
     };
@@ -144,34 +154,36 @@ export default class Bundler {
    * @description Get the list of dependent files of input file
    */
   async parse(input: string): Promise<File[]> {
+    // Assert path
     pathAssert(input, 'The input must be return a non empty string');
 
     const output: File[] = [];
     const { options }: Bundler = this;
     const waiting: Set<string> = new Set();
     const marked: FastMap<MarkedNode> = new FastMap();
-    const [graph, files]: [DependencyGraph, FileList] = await drawDependencyGraph(input, options);
+    const graph: DependencyGraph = await drawDependencyGraph(input, options);
 
     const setMarked: setMarked = (path, referer) => {
       waiting.add(path);
 
-      marked.set(path, { referer, dependencies: graph.get(path).values() });
+      const { contents, dependencies, dependencyPaths }: GraphNode = graph.get(path);
 
-      return path;
+      return marked.set(path, { path, referer, contents, dependencies, dependencyPaths: dependencyPaths.values() });
     };
 
-    let current: string | null = setMarked(input, null);
+    let current: MarkedNode | null = setMarked(input, null);
 
     while (current !== null) {
-      const node: MarkedNode = marked.get(current);
-      const { done, value: path }: IteratorResult<string> = node.dependencies.next();
+      const { done, value: path }: IteratorResult<string> = current.dependencyPaths.next();
 
       if (done) {
-        waiting.delete(current);
+        const { path, contents, dependencies }: MarkedNode = current;
 
-        output.push(files.get(current));
+        waiting.delete(path);
 
-        current = marked.get(current).referer;
+        output.push({ path, contents, dependencies });
+
+        current = current.referer;
       } else {
         if (waiting.has(path)) {
           // Allow circularly dependency
