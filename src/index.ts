@@ -60,6 +60,23 @@ async function readFile(path: string, parse: parse): Promise<File> {
   return { path, contents, dependencies: Array.isArray(dependencies) ? dependencies : [] };
 }
 
+function optionsAssert(options: Options): never | Options {
+  // Assert resolve and parse
+  ['resolve', 'parse'].forEach((option: string) => {
+    if (options && typeof options[option] !== 'function') {
+      throw new TypeError(`The options.${option} must be a function`);
+    }
+  });
+
+  return options;
+}
+
+function pathAssert(path: string, message: string): void | never {
+  if (path && path.constructor !== String) {
+    throw new TypeError(message);
+  }
+}
+
 function drawDependencyGraph(input: string, options: Options): Promise<[DependencyGraph, FileList]> {
   return new Promise<[DependencyGraph, FileList]>((resolve, reject) => {
     let remaining: number = 0;
@@ -79,9 +96,7 @@ function drawDependencyGraph(input: string, options: Options): Promise<[Dependen
         try {
           const path: string = referer !== null ? options.resolve(src, referer) : src;
 
-          if (path && path.constructor !== String) {
-            throw new TypeError('The options.resolve must be return a non empty string');
-          }
+          pathAssert(path, 'The options.resolve must be return a non empty string');
 
           if (!graph.has(path)) {
             graph.set(path, new Set());
@@ -114,22 +129,11 @@ function drawDependencyGraph(input: string, options: Options): Promise<[Dependen
   });
 }
 
-function assert(options: Options): never | Options {
-  // Assert resolve and parse
-  ['resolve', 'parse'].forEach((option: string) => {
-    if (options && typeof options[option] !== 'function') {
-      throw new TypeError(`The options.${option} must be a function`);
-    }
-  });
-
-  return options;
-}
-
 export default class Bundler {
   private options: Options;
 
   constructor(options: Options) {
-    this.options = assert(options);
+    this.options = optionsAssert(options);
   }
 
   /**
@@ -140,6 +144,8 @@ export default class Bundler {
    * @description Get the list of dependent files of input file
    */
   async parse(input: string): Promise<File[]> {
+    pathAssert(input, 'The input must be return a non empty string');
+
     const output: File[] = [];
     const { options }: Bundler = this;
     const waiting: Set<string> = new Set();
