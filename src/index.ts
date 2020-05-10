@@ -77,7 +77,7 @@ function drawDependencyGraph(input: string, options: Options): Promise<[Dependen
         remaining++;
 
         try {
-          const path: string = referer !== null ? await options.resolve(src, referer) : src;
+          const path: string = referer !== null ? options.resolve(src, referer) : src;
 
           if (!graph.has(path)) {
             graph.set(path, new Set());
