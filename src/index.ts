@@ -153,7 +153,6 @@ export default class Bundler {
    * @public
    * @method parse
    * @param {string} input
-   * @returns {Promise<File[]>}
    * @description Get the list of dependent files of input file
    */
   async parse(input: string): Promise<File[]> {
