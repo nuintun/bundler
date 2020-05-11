@@ -33,10 +33,10 @@ async function parse(input) {
 
   const bunder = new Bundler({
     cycle,
-    resolve: (path, referer) => {
+    resolve: (path, referrer) => {
       if (/^\//.test(path)) return path;
 
-      const dirname = referer.replace(/\/[^\/]+$/, '');
+      const dirname = referrer.replace(/\/[^\/]+$/, '');
 
       return `${dirname}/${path}`.replace(/(\.\/)+/g, '');
     },

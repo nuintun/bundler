@@ -14,7 +14,7 @@
 >
 > > support circularly dependency
 >
-> options.resolve(path: string, referer: string) => string
+> options.resolve(path: string, referrer: string) => string
 >
 > > path resolve function
 >
@@ -46,10 +46,10 @@ const files = {
 };
 
 const bunder = new Bundler({
-  resolve: (path, referer) => {
+  resolve: (path, referrer) => {
     if (/^\//.test(path)) return path;
 
-    const dirname = referer.replace(/\/[^\/]+$/, '');
+    const dirname = referrer.replace(/\/[^\/]+$/, '');
 
     return `${dirname}/${path}`.replace(/(\.\/)+/g, '');
   },
