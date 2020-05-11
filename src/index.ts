@@ -22,10 +22,13 @@ export interface ParseResult {
   readonly dependencies?: dependencies;
 }
 
-export interface File {
-  readonly path: string;
+interface Metafile {
   readonly contents: any;
   readonly dependencies: dependencies;
+}
+
+export interface File extends Metafile {
+  readonly path: string;
 }
 
 interface VisitedNode {
@@ -40,8 +43,6 @@ class GraphNode {
   public contents: any;
   public dependencies: dependencies;
   public references: Set<string> = new Set();
-
-  constructor(public path: string) {}
 }
 
 const { hasOwnProperty }: Object = Object.prototype;
@@ -64,10 +65,10 @@ class FastMap<T> {
   }
 }
 
-async function readFile(path: string, parse: parse): Promise<File> {
+async function readFile(path: string, parse: parse): Promise<Metafile> {
   const { contents = null, dependencies }: ParseResult = (await parse(path)) || {};
 
-  return { path, contents, dependencies: Array.isArray(dependencies) ? dependencies : [] };
+  return { contents, dependencies: Array.isArray(dependencies) ? dependencies : [] };
 }
 
 function optionsAssert(options: Options): never | Options {
@@ -112,11 +113,11 @@ function drawDependencyGraph(input: string, options: Options): Promise<Dependenc
 
           // Read file and parse dependencies
           if (!graph.has(path)) {
-            const node: GraphNode = new GraphNode(path);
+            const node: GraphNode = new GraphNode();
 
             graph.set(path, node);
 
-            const { contents, dependencies }: File = await readFile(path, parse);
+            const { contents, dependencies }: Metafile = await readFile(path, parse);
 
             node.contents = contents;
             node.dependencies = dependencies;
