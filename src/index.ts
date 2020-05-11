@@ -162,12 +162,14 @@ export default class Bundler {
     const { options }: Bundler = this;
     const marked: Set<string> = new Set();
     const waiting: Set<string> = new Set();
+    const acyclic: boolean = !options.cycle;
+
     const graph: DependencyGraph = await drawDependencyGraph(input, options);
 
     const setMark: setMark = (path, referrer) => {
       marked.add(path);
 
-      waiting.add(path);
+      acyclic && waiting.add(path);
 
       const { contents, dependencies, references }: GraphNode = graph.get(path);
 
@@ -182,16 +184,13 @@ export default class Bundler {
       if (done) {
         const { path, contents, dependencies }: MarkNode = current;
 
-        waiting.delete(path);
+        acyclic && waiting.delete(path);
 
         output.push({ path, contents, dependencies });
 
         current = current.referrer;
       } else {
-        if (waiting.has(path)) {
-          // Allow circularly dependency
-          if (options.cycle) continue;
-
+        if (acyclic && waiting.has(path)) {
           // When not allowed cycle throw error
           throw new ReferenceError(`Found circularly dependency ${path} at ${current.path}`);
         }
