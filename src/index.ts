@@ -4,8 +4,8 @@
 
 type dependencies = string[];
 type DependencyGraph = FastMap<GraphNode>;
+type visitNode = (path: string, referrer: VisitedNode | null) => VisitedNode;
 type drawGraphNode = (src: string, referrer: string | null) => Promise<void>;
-type markVisited = (path: string, referrer: VisitedNode | null) => VisitedNode;
 
 export type resolve = (src: string, referrer: string) => string;
 export type parse = (path: string) => void | ParseResult | Promise<void | ParseResult>;
@@ -166,7 +166,7 @@ export default class Bundler {
 
     const graph: DependencyGraph = await drawDependencyGraph(input, options);
 
-    const markVisited: markVisited = (path, referrer) => {
+    const visitNode: visitNode = (path, referrer) => {
       visited.add(path);
 
       acyclic && waiting.add(path);
@@ -176,7 +176,7 @@ export default class Bundler {
       return { path, referrer, contents, dependencies, references: references.values() };
     };
 
-    let current: VisitedNode | null = markVisited(input, null);
+    let current: VisitedNode | null = visitNode(input, null);
 
     while (current !== null) {
       const { done, value: path }: IteratorResult<string> = current.references.next();
@@ -196,7 +196,7 @@ export default class Bundler {
         }
 
         if (!visited.has(path)) {
-          current = markVisited(path, current);
+          current = visitNode(path, current);
         }
       }
     }
