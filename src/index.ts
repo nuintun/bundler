@@ -37,10 +37,11 @@ interface MarkNode {
 }
 
 class GraphNode {
-  public path: string;
   public contents: any;
   public dependencies: dependencies;
   public references: Set<string> = new Set();
+
+  constructor(public path: string) {}
 }
 
 const { hasOwnProperty }: Object = Object.prototype;
@@ -111,9 +112,7 @@ function drawDependencyGraph(input: string, options: Options): Promise<Dependenc
 
           // Read file and parse dependencies
           if (!graph.has(path)) {
-            const node: GraphNode = new GraphNode();
-
-            node.path = path;
+            const node: GraphNode = new GraphNode(path);
 
             graph.set(path, node);
 
