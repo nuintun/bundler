@@ -156,7 +156,7 @@ export default class Bundler {
    */
   async parse(input: string): Promise<File[]> {
     // Assert path
-    pathAssert(input, 'The input must be return a non empty string');
+    pathAssert(input, 'The input must be a non empty string');
 
     const output: File[] = [];
     const { options }: Bundler = this;
