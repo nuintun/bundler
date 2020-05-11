@@ -31,10 +31,7 @@ export interface File extends Metafile {
   readonly path: string;
 }
 
-interface VisitedNode {
-  readonly path: string;
-  readonly contents: any;
-  readonly dependencies: dependencies;
+interface VisitedNode extends File {
   readonly referrer: VisitedNode | null;
   readonly references: IterableIterator<string>;
 }
