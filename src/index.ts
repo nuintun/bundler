@@ -4,8 +4,8 @@
 
 type dependencies = string[];
 type DependencyGraph = FastMap<GraphNode>;
-type setMark = (path: string, referrer: MarkNode | null) => MarkNode;
 type drawGraphNode = (src: string, referrer: string | null) => Promise<void>;
+type markVisited = (path: string, referrer: VisitedNode | null) => VisitedNode;
 
 export type resolve = (src: string, referrer: string) => string;
 export type parse = (path: string) => void | ParseResult | Promise<void | ParseResult>;
@@ -28,11 +28,11 @@ export interface File {
   readonly dependencies: dependencies;
 }
 
-interface MarkNode {
+interface VisitedNode {
   readonly path: string;
   readonly contents: any;
-  readonly referrer: MarkNode | null;
   readonly dependencies: dependencies;
+  readonly referrer: VisitedNode | null;
   readonly references: IterableIterator<string>;
 }
 
@@ -160,14 +160,14 @@ export default class Bundler {
 
     const output: File[] = [];
     const { options }: Bundler = this;
-    const marked: Set<string> = new Set();
+    const visited: Set<string> = new Set();
     const waiting: Set<string> = new Set();
     const acyclic: boolean = !options.cycle;
 
     const graph: DependencyGraph = await drawDependencyGraph(input, options);
 
-    const setMark: setMark = (path, referrer) => {
-      marked.add(path);
+    const markVisited: markVisited = (path, referrer) => {
+      visited.add(path);
 
       acyclic && waiting.add(path);
 
@@ -176,13 +176,13 @@ export default class Bundler {
       return { path, referrer, contents, dependencies, references: references.values() };
     };
 
-    let current: MarkNode | null = setMark(input, null);
+    let current: VisitedNode | null = markVisited(input, null);
 
     while (current !== null) {
       const { done, value: path }: IteratorResult<string> = current.references.next();
 
       if (done) {
-        const { path, contents, dependencies }: MarkNode = current;
+        const { path, contents, dependencies }: VisitedNode = current;
 
         acyclic && waiting.delete(path);
 
@@ -195,8 +195,8 @@ export default class Bundler {
           throw new ReferenceError(`Found circularly dependency ${path} at ${current.path}`);
         }
 
-        if (!marked.has(path)) {
-          current = setMark(path, current);
+        if (!visited.has(path)) {
+          current = markVisited(path, current);
         }
       }
     }
