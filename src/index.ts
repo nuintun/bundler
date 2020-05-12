@@ -31,15 +31,16 @@ export interface File extends Metafile {
   readonly path: string;
 }
 
-interface VisitedNode extends File {
+interface VisitedNode {
+  readonly path: string;
+  readonly value: Metafile;
   readonly referrer: VisitedNode | null;
-  readonly references: IterableIterator<string>;
+  readonly children: IterableIterator<string>;
 }
 
 class GraphNode {
-  public contents: any;
-  public dependencies: dependencies;
-  public references: Set<string> = new Set();
+  public value: Metafile;
+  public children: Set<string> = new Set();
 }
 
 const { hasOwnProperty }: Object = Object.prototype;
@@ -105,7 +106,7 @@ function drawDependencyGraph(input: string, options: Options): Promise<Dependenc
 
           // Add dependency path to referrer
           if (referrer !== null) {
-            graph.get(referrer).references.add(path);
+            graph.get(referrer).children.add(path);
           }
 
           // Read file and parse dependencies
@@ -114,10 +115,9 @@ function drawDependencyGraph(input: string, options: Options): Promise<Dependenc
 
             graph.set(path, node);
 
-            const { contents, dependencies }: Metafile = await readFile(path, parse);
+            node.value = await readFile(path, parse);
 
-            node.contents = contents;
-            node.dependencies = dependencies;
+            const { dependencies }: Metafile = node.value;
 
             for (const src of dependencies) {
               drawGraphNode(src, path);
@@ -169,18 +169,19 @@ export default class Bundler {
 
       acyclic && waiting.add(path);
 
-      const { contents, dependencies, references }: GraphNode = graph.get(path);
+      const { value, children }: GraphNode = graph.get(path);
 
-      return { path, referrer, contents, dependencies, references: references.values() };
+      return { path, value, referrer, children: children.values() };
     };
 
     let current: VisitedNode | null = visitNode(input, null);
 
     while (current !== null) {
-      const { done, value: path }: IteratorResult<string> = current.references.next();
+      const { done, value: path }: IteratorResult<string> = current.children.next();
 
       if (done) {
-        const { path, contents, dependencies }: VisitedNode = current;
+        const { path, value }: VisitedNode = current;
+        const { contents, dependencies }: Metafile = value;
 
         acyclic && waiting.delete(path);
 
