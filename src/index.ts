@@ -191,7 +191,7 @@ export default class Bundler {
       } else {
         if (acyclic && waiting.has(path)) {
           // When not allowed cycle throw error
-          throw new ReferenceError(`Found circularly dependency ${path} at ${current.path}`);
+          throw new ReferenceError(`Found circular dependency ${path} in ${current.path}`);
         }
 
         if (!visited.has(path)) {
