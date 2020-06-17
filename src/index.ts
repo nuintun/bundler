@@ -7,13 +7,14 @@ type DependencyGraph = FastMap<GraphNode>;
 type visitNode = (path: string, referrer: VisitedNode | null) => VisitedNode;
 type drawGraphNode = (src: string, referrer: string | null) => Promise<void>;
 
+export type oncycle = (path: string, referrer: string) => void;
 export type resolve = (src: string, referrer: string) => string;
 export type parse = (path: string) => void | ParseResult | Promise<void | ParseResult>;
 
 export interface Options {
   parse: parse;
-  cycle?: boolean;
   resolve: resolve;
+  oncycle?: oncycle;
   [key: string]: any;
 }
 
@@ -160,14 +161,13 @@ export default class Bundler {
     const { options }: Bundler = this;
     const visited: Set<string> = new Set();
     const waiting: Set<string> = new Set();
-    const acyclic: boolean = !options.cycle;
-
     const graph: DependencyGraph = await drawDependencyGraph(input, options);
+    const oncycle: oncycle | null = typeof options.oncycle === 'function' ? options.oncycle : null;
 
     const visitNode: visitNode = (path, referrer) => {
       visited.add(path);
 
-      acyclic && waiting.add(path);
+      oncycle && waiting.add(path);
 
       const { value, children }: GraphNode = graph.get(path);
 
@@ -183,15 +183,15 @@ export default class Bundler {
         const { path, value }: VisitedNode = current;
         const { contents, dependencies }: Metafile = value;
 
-        acyclic && waiting.delete(path);
+        oncycle && waiting.delete(path);
 
         output.push({ path, contents, dependencies });
 
         current = current.referrer;
       } else {
-        if (acyclic && waiting.has(path)) {
-          // When not allowed cycle throw error
-          throw new ReferenceError(`Found circular dependency ${path} in ${current.path}`);
+        // Found circular dependency
+        if (oncycle && waiting.has(path)) {
+          oncycle(path, current.path);
         }
 
         if (!visited.has(path)) {

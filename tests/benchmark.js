@@ -21,7 +21,6 @@ async function parse(input) {
   console.time('Bundler');
 
   const bunder = new Bundler({
-    cycle: false,
     resolve: path => path,
     parse: path => files[path]
   });

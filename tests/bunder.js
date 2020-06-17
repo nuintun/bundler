@@ -21,6 +21,10 @@ const files = {
 // npm test allow-cycle
 const cycle = process.argv[2] === '--cycle';
 
+const oncycle = (path, referrer) => {
+  throw new ReferenceError(`Found circular dependency ${path} in ${referrer}`);
+};
+
 function getRandom(min, max, fixed = 0) {
   const differ = max - min;
   const random = Math.random();
@@ -32,7 +36,7 @@ async function parse(input) {
   console.time('Bundler');
 
   const bunder = new Bundler({
-    cycle,
+    oncycle: cycle ? null : oncycle,
     resolve: (path, referrer) => {
       if (/^\//.test(path)) return path;
 

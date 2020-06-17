@@ -10,9 +10,9 @@
 
 > #### new Bundler(options: Object) => Bundler
 >
-> options.cycle: boolean
+> options.oncycle: (path: string, referrer: string) => void
 >
-> > support circularly dependency
+> > found circularly dependency callback function
 >
 > options.resolve(path: string, referrer: string) => string
 >
