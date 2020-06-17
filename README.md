@@ -8,7 +8,7 @@
 
 ### API
 
-> #### new Bundler(options: Object) => Bundler
+> #### new Bundler(options: Options) => Bundler
 >
 > options?.oncycle: (path: string, referrer: string) => void
 >
@@ -22,7 +22,7 @@
 >
 > > file dependencies parse function, support async function
 >
-> #### new Bundler(options: Object).parse(input: string) => Promise<File[]\>
+> #### new Bundler(options: Options).parse(input: string) => Promise<File[]\>
 >
 > input: string
 >
