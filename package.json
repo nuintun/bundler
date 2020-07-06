@@ -28,8 +28,8 @@
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
-    "rollup": "^2.18.1",
-    "typescript": "^3.9.5",
+    "rollup": "^2.19.0",
+    "typescript": "^3.9.6",
     "rollup-plugin-typescript2": "^0.27.1"
   },
   "homepage": "https://github.com/nuintun/bundler#readme"
