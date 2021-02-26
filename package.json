@@ -23,14 +23,16 @@
     "url": "https://github.com/nuintun/bundler/issues"
   },
   "scripts": {
+    "test": "node tests/bunder.js",
     "prepublishOnly": "npm run build",
-    "build": "rollup -c rollup.config.js"
+    "build": "rollup -c rollup.config.js",
+    "benchmark": "node tests/benchmark.js"
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
-    "rollup": "^2.26.8",
-    "typescript": "^4.0.2",
-    "rollup-plugin-typescript2": "^0.27.2"
+    "rollup": "^2.39.1",
+    "typescript": "^4.2.2",
+    "rollup-plugin-typescript2": "^0.30.0"
   },
   "homepage": "https://github.com/nuintun/bundler#readme"
 }
