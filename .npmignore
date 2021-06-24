@@ -130,17 +130,17 @@ package-lock.json
 # typescript configuration
 tsconfig.json
 
-# src file
-src/
+# src directories
+src
 
-# example file
-examples/
+# example directories
+examples
 
 # github pages
 _config.yml
 
 # github
-.github/
+.github
 
 # editor config
 .editorconfig
@@ -150,3 +150,4 @@ rollup.config.js
 
 # prettier
 .prettierrc
+.prettierignore
