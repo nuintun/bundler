@@ -47,7 +47,7 @@ class GraphNode {
 const { hasOwnProperty }: Object = Object.prototype;
 
 class FastMap<T> {
-  public map: { [key: string]: T } = Object.create(null);
+  private map: { [key: string]: T } = Object.create(null);
 
   set(key: string, value: T): FastMap<T> {
     this.map[key] = value;
