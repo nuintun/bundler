@@ -40,7 +40,7 @@ interface VisitedNode {
 }
 
 class GraphNode {
-  public value: Metafile;
+  public value!: Metafile;
   public children: Set<string> = new Set();
 }
 
