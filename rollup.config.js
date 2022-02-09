@@ -4,7 +4,7 @@
 
 import rimraf from 'rimraf';
 import pkg from './package.json';
-import typescript from 'rollup-plugin-typescript2';
+import typescript from '@rollup/plugin-typescript';
 
 rimraf.sync('typings');
 rimraf.sync('index.js');
@@ -34,5 +34,10 @@ export default {
     file: 'index.js',
     preferConst: true
   },
-  plugins: [typescript({ tsconfigOverride, clean: true, useTsconfigDeclarationDir: true })]
+  plugins: [typescript()],
+  onwarn(error, warn) {
+    if (error.code !== 'CIRCULAR_DEPENDENCY') {
+      warn(error);
+    }
+  }
 };

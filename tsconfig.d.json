@@ -5,6 +5,7 @@
     "newLine": "lf",
     "target": "ESNext",
     "module": "ESNext",
+    "declaration": true,
     "skipLibCheck": true,
     "importHelpers": true,
     "noUnusedLocals": true,
@@ -12,6 +13,8 @@
     "resolveJsonModule": true,
     "moduleResolution": "Node",
     "noUnusedParameters": true,
+    "declarationDir": "typings",
+    "emitDeclarationOnly": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true
   },
