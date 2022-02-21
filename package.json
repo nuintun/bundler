@@ -27,7 +27,7 @@
     "prepublishOnly": "npm run build",
     "benchmark": "node tests/benchmark.js",
     "build:main": "rollup -c rollup.config.js",
-    "format": "prettier --write src index.js typings",
+    "format": "prettier --write src tests index.js typings",
     "build": "npm run build:main && npm run build:typings && npm run format",
     "build:typings": "tsc --declaration --emitDeclarationOnly --declarationDir typings"
   },
