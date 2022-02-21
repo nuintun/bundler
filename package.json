@@ -26,20 +26,20 @@
     "test": "node tests/bunder.js",
     "prepublishOnly": "npm run build",
     "benchmark": "node tests/benchmark.js",
-    "build:typings": "tsc -p tsconfig.d.json",
     "build:main": "rollup -c rollup.config.js",
     "format": "prettier --write src index.js typings",
-    "build": "npm run build:main && npm run build:typings && npm run format"
+    "build": "npm run build:main && npm run build:typings && npm run format",
+    "build:typings": "tsc --declaration --emitDeclarationOnly --declarationDir typings"
   },
   "dependencies": {
     "tslib": "^2.3.1"
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
-    "rollup": "^2.67.1",
+    "rollup": "^2.67.3",
     "prettier": "^2.5.1",
     "typescript": "^4.5.5",
-    "@types/node": "^17.0.16",
+    "@types/node": "^17.0.18",
     "@rollup/plugin-typescript": "^8.3.0"
   },
   "homepage": "https://github.com/nuintun/bundler#readme"
