@@ -4,7 +4,7 @@
  * @version 2018/01/29
  */
 
-const Bundler = require('../');
+const Bundler = require('../cjs');
 
 const files = {};
 const length = 100000;

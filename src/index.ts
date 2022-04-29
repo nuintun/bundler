@@ -15,7 +15,6 @@ export interface Options {
   parse: parse;
   resolve: resolve;
   oncycle?: oncycle;
-  [key: string]: any;
 }
 
 export interface ParseResult {
@@ -41,10 +40,10 @@ interface VisitedNode {
 
 class GraphNode {
   public value!: Metafile;
-  public children: Set<string> = new Set();
+  public children = new Set<string>();
 }
 
-const { hasOwnProperty }: Object = Object.prototype;
+const { hasOwnProperty } = Object.prototype;
 
 class FastMap<T> {
   private map: { [key: string]: T } = Object.create(null);
@@ -64,46 +63,47 @@ class FastMap<T> {
   }
 }
 
-async function readFile(path: string, parse: parse): Promise<Metafile> {
-  const { contents = null, dependencies }: ParseResult = (await parse(path)) || {};
-
-  return { contents, dependencies: Array.isArray(dependencies) ? dependencies : [] };
+function isFunction(value: unknown): value is Function {
+  return typeof value === 'function';
 }
 
-function optionsAssert(options: Options): never | Options {
-  // Assert resolve and parse
-  ['resolve', 'parse'].forEach((option: string) => {
-    if (options && typeof options[option] !== 'function') {
-      throw new TypeError(`The options.${option} must be a function`);
+function assertOptions(options?: Options): never | Options {
+  if (!options) {
+    throw new Error('The options is required');
+  }
+
+  const keys: (keyof Options)[] = ['resolve', 'parse'];
+
+  for (const key of keys) {
+    // Assert resolve and parse
+    if (!isFunction(options[key])) {
+      throw new TypeError(`The options.${key} must be a function`);
     }
-  });
+  }
 
   return options;
 }
 
-function pathAssert(path: string, message: string): void | never {
-  if (path && path.constructor !== String) {
-    throw new TypeError(message);
-  }
+async function readFile(path: string, parse: parse): Promise<Metafile> {
+  const { contents = null, dependencies } = (await parse(path)) || {};
+
+  return { contents, dependencies: Array.isArray(dependencies) ? dependencies : [] };
 }
 
 function drawDependencyGraph(input: string, options: Options): Promise<DependencyGraph> {
   return new Promise<DependencyGraph>((pResolve, pReject) => {
-    let remaining: number = 0;
-    let hasError: boolean = false;
+    let remaining = 0;
+    let hasError = false;
 
-    const { resolve, parse }: Options = options;
-    const graph: DependencyGraph = new FastMap();
+    const { resolve, parse } = options;
+    const graph = new FastMap<GraphNode>();
 
     const drawGraphNode: drawGraphNode = async (src, referrer) => {
       if (!hasError) {
         remaining++;
 
         try {
-          const path: string = referrer !== null ? resolve(src, referrer) : src;
-
-          // Assert path
-          pathAssert(path, 'The options.resolve must be return a non empty string');
+          const path = referrer !== null ? resolve(src, referrer) : src;
 
           // Add dependency path to referrer
           if (referrer !== null) {
@@ -112,13 +112,13 @@ function drawDependencyGraph(input: string, options: Options): Promise<Dependenc
 
           // Read file and parse dependencies
           if (!graph.has(path)) {
-            const node: GraphNode = new GraphNode();
+            const node = new GraphNode();
 
             graph.set(path, node);
 
             node.value = await readFile(path, parse);
 
-            const { dependencies }: Metafile = node.value;
+            const { dependencies } = node.value;
 
             for (const src of dependencies) {
               drawGraphNode(src, path);
@@ -141,10 +141,10 @@ function drawDependencyGraph(input: string, options: Options): Promise<Dependenc
 }
 
 export default class Bundler {
-  private options: Options;
+  private readonly options: Options;
 
   constructor(options: Options) {
-    this.options = optionsAssert(options);
+    this.options = assertOptions(options);
   }
 
   /**
@@ -154,22 +154,19 @@ export default class Bundler {
    * @description Get the list of dependent files of input file
    */
   async parse(input: string): Promise<File[]> {
-    // Assert path
-    pathAssert(input, 'The input must be a non empty string');
-
+    const { options } = this;
     const output: File[] = [];
-    const { options }: Bundler = this;
-    const visited: Set<string> = new Set();
-    const waiting: Set<string> = new Set();
-    const graph: DependencyGraph = await drawDependencyGraph(input, options);
-    const oncycle: oncycle | null = typeof options.oncycle === 'function' ? options.oncycle : null;
+    const visited = new Set<string>();
+    const waiting = new Set<string>();
+    const graph = await drawDependencyGraph(input, options);
+    const oncycle = isFunction(options.oncycle) ? options.oncycle : null;
 
     const visitNode: visitNode = (path, referrer) => {
       visited.add(path);
 
       oncycle && waiting.add(path);
 
-      const { value, children }: GraphNode = graph.get(path);
+      const { value, children } = graph.get(path);
 
       return { path, value, referrer, children: children.values() };
     };
@@ -177,11 +174,11 @@ export default class Bundler {
     let current: VisitedNode | null = visitNode(input, null);
 
     while (current !== null) {
-      const { done, value: path }: IteratorResult<string> = current.children.next();
+      const { done, value: path }: IteratorResult<string, string> = current.children.next();
 
       if (done) {
-        const { path, value }: VisitedNode = current;
-        const { contents, dependencies }: Metafile = value;
+        const { path, value } = current;
+        const { contents, dependencies } = value;
 
         oncycle && waiting.delete(path);
 
