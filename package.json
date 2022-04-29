@@ -2,7 +2,8 @@
   "name": "@nuintun/bundler",
   "version": "3.1.0",
   "description": "An async file dependency bundle parser.",
-  "main": "index.js",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
   "typings": "typings/index.d.ts",
   "files": [
     "cjs",
