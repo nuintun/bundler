@@ -104,5 +104,6 @@ dist
 .tern-port
 
 # Build directories
-cjs
-esm
+/cjs/
+/esm/
+/types/

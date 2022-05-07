@@ -6,11 +6,11 @@ import rimraf from 'rimraf';
 import pkg from './package.json';
 import typescript from '@rollup/plugin-typescript';
 
-rimraf.sync('typings');
+rimraf.sync('types');
 rimraf.sync('index.js');
 
 const banner = `/**
- * @module ${pkg.name}
+ * @package ${pkg.name}
  * @license ${pkg.license}
  * @version ${pkg.version}
  * @author ${pkg.author.name}
