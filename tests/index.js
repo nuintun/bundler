@@ -4,7 +4,7 @@
  * @version 2018/01/26
  */
 
-const Bundler = require('../cjs');
+import Bundler from '../esm/index.js';
 
 const files = {
   '/src/1.js': { contents: 'file 1', dependencies: ['2.js', '4.js'] },

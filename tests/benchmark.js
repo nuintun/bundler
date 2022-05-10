@@ -4,7 +4,7 @@
  * @version 2018/01/29
  */
 
-const Bundler = require('../cjs');
+import Bundler from '../esm/index.js';
 
 const files = {};
 const length = 100000;
