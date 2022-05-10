@@ -3,8 +3,9 @@
 > An async file dependency bundle parser
 >
 > [![NPM Version][npm-image]][npm-url]
+> [![Download Status][download-image]][npm-url]
 > ![Node Version][node-image]
-> [![Dependencies][david-image]][david-url]
+> [![License][license-image]][license-url]
 
 ### API
 
@@ -124,7 +125,8 @@ parse('/src/1.js');
 ```
 
 [npm-image]: https://img.shields.io/npm/v/@nuintun/bundler.svg?style=flat-square
-[npm-url]: https://www.npmjs.org/package/@nuintun/bundler
 [node-image]: https://img.shields.io/node/v/@nuintun/bundler.svg?style=flat-square
-[david-image]: http://img.shields.io/david/dev/nuintun/bundler.svg?style=flat-square
-[david-url]: https://david-dm.org/nuintun/bundler?type=dev
+[download-image]: https://img.shields.io/npm/dm/@nuintun/bundler?style=flat-square
+[npm-url]: https://www.npmjs.org/package/@nuintun/bundler
+[license-image]: https://img.shields.io/github/license/nuintun/bundler?style=flat-square
+[license-url]: https://github.com/nuintun/bundler/blob/master/LICENSE
