@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.3.2",
-    "magic-string": "^0.26.2",
+    "magic-string": "^0.29.0",
     "prettier": "^2.6.2",
     "rimraf": "^3.0.2",
     "rollup": "^2.72.1",
