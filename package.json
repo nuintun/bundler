@@ -33,6 +33,7 @@
   "bugs": {
     "url": "https://github.com/nuintun/bundler/issues"
   },
+  "homepage": "https://github.com/nuintun/bundler#readme",
   "scripts": {
     "lint": "tsc --noEmit",
     "clean": "node tools/clean.js",
@@ -54,6 +55,5 @@
     "rimraf": "^4.4.1",
     "rollup": "^3.20.2",
     "typescript": "^5.0.2"
-  },
-  "homepage": "https://github.com/nuintun/bundler#readme"
+  }
 }
