@@ -2,51 +2,63 @@
  * @module index
  */
 
-type dependencies = string[];
-type DependencyGraph = FastMap<GraphNode>;
-type visitNode = (path: string, referrer: VisitedNode | null) => VisitedNode;
-type drawGraphNode = (src: string, referrer: string | null) => Promise<void>;
-
-export type oncycle = (path: string, referrer: string) => void;
-export type resolve = (src: string, referrer: string) => string;
-export type parse = (path: string) => void | ParseResult | Promise<void | ParseResult>;
-
-export interface Options {
-  parse: parse;
-  resolve: resolve;
-  oncycle?: oncycle;
+export interface OnCycle {
+  (path: string, referrer: string): void;
 }
 
-export interface ParseResult {
-  readonly contents?: any;
-  readonly dependencies?: dependencies;
+export interface Resolve {
+  (src: string, referrer: string): string;
 }
 
-interface Metafile {
-  readonly contents: any;
-  readonly dependencies: dependencies;
+export interface Parse<T> {
+  (path: string): void | ParseResult<T> | Promise<void | ParseResult<T>>;
 }
 
-export interface File extends Metafile {
+export interface Options<T> {
+  parse: Parse<T>;
+  resolve: Resolve;
+  oncycle?: OnCycle;
+}
+
+export interface ParseResult<T> {
+  readonly contents?: T;
+  readonly dependencies?: string[];
+}
+
+interface Metafile<T> {
+  readonly contents: T | null;
+  readonly dependencies: string[];
+}
+
+export interface File<T> extends Metafile<T> {
   readonly path: string;
 }
 
-interface VisitedNode {
+interface VisitedNode<T> {
   readonly path: string;
-  readonly value: Metafile;
-  readonly referrer: VisitedNode | null;
+  readonly value: Metafile<T>;
+  readonly referrer: VisitedNode<T> | null;
   readonly children: IterableIterator<string>;
 }
 
-class GraphNode {
-  public value!: Metafile;
+interface DrawGraphNode {
+  (src: string, referrer: string | null): Promise<void>;
+}
+
+interface VisitNode<T> {
+  (path: string, referrer: VisitedNode<T> | null): VisitedNode<T>;
+}
+
+class GraphNode<T> {
   public children = new Set<string>();
+
+  constructor(public value: Metafile<T>) {}
 }
 
 const { hasOwnProperty } = Object.prototype;
 
 class FastMap<T> {
-  private map: { [key: string]: T } = Object.create(null);
+  private map: Record<string, T> = Object.create(null);
 
   set(key: string, value: T): FastMap<T> {
     this.map[key] = value;
@@ -67,12 +79,12 @@ function isFunction(value: unknown): value is Function {
   return typeof value === 'function';
 }
 
-function assertOptions(options?: Options): never | Options {
+function assertOptions<T>(options?: Options<T>): never | Options<T> {
   if (!options) {
     throw new Error('The options is required');
   }
 
-  const keys: (keyof Options)[] = ['resolve', 'parse'];
+  const keys: (keyof Options<T>)[] = ['resolve', 'parse'];
 
   for (const key of keys) {
     // Assert resolve and parse
@@ -84,21 +96,21 @@ function assertOptions(options?: Options): never | Options {
   return options;
 }
 
-async function readFile(path: string, parse: parse): Promise<Metafile> {
+async function readFile<T>(path: string, parse: Parse<T>): Promise<Metafile<T>> {
   const { contents = null, dependencies } = (await parse(path)) || {};
 
   return { contents, dependencies: Array.isArray(dependencies) ? dependencies : [] };
 }
 
-function drawDependencyGraph(input: string, options: Options): Promise<DependencyGraph> {
-  return new Promise<DependencyGraph>((pResolve, pReject) => {
+function drawDependencyGraph<T>(input: string, options: Options<T>): Promise<FastMap<GraphNode<T>>> {
+  return new Promise((pResolve, pReject) => {
     let remaining = 0;
     let hasError = false;
 
     const { resolve, parse } = options;
-    const graph = new FastMap<GraphNode>();
+    const graph = new FastMap<GraphNode<T>>();
 
-    const drawGraphNode: drawGraphNode = async (src, referrer) => {
+    const drawGraphNode: DrawGraphNode = async (src, referrer) => {
       if (!hasError) {
         remaining++;
 
@@ -112,13 +124,12 @@ function drawDependencyGraph(input: string, options: Options): Promise<Dependenc
 
           // Read file and parse dependencies
           if (!graph.has(path)) {
-            const node = new GraphNode();
+            const value = await readFile(path, parse);
+            const node = new GraphNode<T>(value);
 
             graph.set(path, node);
 
-            node.value = await readFile(path, parse);
-
-            const { dependencies } = node.value;
+            const { dependencies } = value;
 
             for (const src of dependencies) {
               drawGraphNode(src, path);
@@ -140,10 +151,10 @@ function drawDependencyGraph(input: string, options: Options): Promise<Dependenc
   });
 }
 
-export default class Bundler {
-  private readonly options: Options;
+export default class Bundler<T> {
+  private readonly options: Options<T>;
 
-  constructor(options: Options) {
+  constructor(options: Options<T>) {
     this.options = assertOptions(options);
   }
 
@@ -153,15 +164,15 @@ export default class Bundler {
    * @param {string} input
    * @description Get the list of dependent files of input file
    */
-  async parse(input: string): Promise<File[]> {
+  async parse(input: string): Promise<File<T>[]> {
     const { options } = this;
-    const output: File[] = [];
+    const output: File<T>[] = [];
     const visited = new Set<string>();
     const waiting = new Set<string>();
     const graph = await drawDependencyGraph(input, options);
     const oncycle = isFunction(options.oncycle) ? options.oncycle : null;
 
-    const visitNode: visitNode = (path, referrer) => {
+    const visitNode: VisitNode<T> = (path, referrer) => {
       visited.add(path);
 
       oncycle && waiting.add(path);
@@ -171,7 +182,7 @@ export default class Bundler {
       return { path, value, referrer, children: children.values() };
     };
 
-    let current: VisitedNode | null = visitNode(input, null);
+    let current: VisitedNode<T> | null = visitNode(input, null);
 
     while (current !== null) {
       const { done, value: path }: IteratorResult<string, string> = current.children.next();
