@@ -1,7 +1,5 @@
 /**
  * @module benchmark
- * @license MIT
- * @version 2018/01/29
  */
 
 import Bundler from '@nuintun/bundler';

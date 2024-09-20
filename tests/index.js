@@ -1,7 +1,5 @@
 /**
  * @module bunder
- * @license MIT
- * @version 2018/01/26
  */
 
 import Bundler from '@nuintun/bundler';
