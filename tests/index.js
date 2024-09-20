@@ -4,7 +4,7 @@
  * @version 2018/01/26
  */
 
-import Bundler from '../esm/index.js';
+import Bundler from '@nuintun/bundler';
 
 const files = {
   '/src/1.js': { contents: 'file 1', dependencies: ['2.js', '4.js'] },
@@ -37,12 +37,16 @@ async function parse(input) {
 
   const bunder = new Bundler({
     oncycle: cycle ? null : oncycle,
-    resolve: (path, referrer) => {
-      if (/^\//.test(path)) return path;
+    resolve: async (path, referrer) => {
+      if (referrer != null) {
+        if (/^\//.test(path)) return path;
 
-      const dirname = referrer.replace(/\/[^\/]+$/, '');
+        const dirname = referrer.replace(/\/[^\/]+$/, '');
 
-      return `${dirname}/${path}`.replace(/(\.\/)+/g, '');
+        return `${dirname}/${path}`.replace(/(\.\/)+/g, '');
+      }
+
+      return path;
     },
     parse: path => {
       return new Promise(resolve => {

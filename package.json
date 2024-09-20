@@ -1,6 +1,6 @@
 {
   "name": "@nuintun/bundler",
-  "version": "3.3.1",
+  "version": "3.4.0",
   "description": "An async file dependency bundle parser.",
   "type": "module",
   "main": "cjs/index.cjs",
@@ -41,7 +41,7 @@
     "prepublishOnly": "npm run build",
     "build:cjs": "rollup -c tools/rollup.cjs.js",
     "build:esm": "rollup -c tools/rollup.esm.js",
-    "format": "prettier --write tools src cjs esm types",
+    "format": "prettier --write . --ignore-path .prettierignore",
     "build": "npm run clean && npm run build:main && npm run format",
     "build:main": "npm run build:cjs && npm run build:esm && npm run build:types",
     "build:types": "tsc --declaration --emitDeclarationOnly --declarationDir types"
@@ -54,7 +54,7 @@
     "magic-string": "^0.30.11",
     "prettier": "^3.3.3",
     "rimraf": "^6.0.1",
-    "rollup": "^4.22.0",
+    "rollup": "^4.22.1",
     "typescript": "^5.6.2"
   }
 }

@@ -4,7 +4,7 @@
  * @version 2018/01/29
  */
 
-import Bundler from '../esm/index.js';
+import Bundler from '@nuintun/bundler';
 
 const files = {};
 const length = 100000;
