@@ -4,48 +4,48 @@
 
 import { File, GraphNode, Options, Parse, ProcessFile } from './interface';
 
-async function readFile<T>(path: string, parse: Parse<T>): Promise<File<T>> {
-  const parsed = await parse(path);
-  const { contents = null, dependencies } = parsed || {};
+async function parseFile<T>(path: string, parse: Parse<T>): Promise<Omit<File<T>, 'path'>> {
+  const meta = await parse(path);
+  const { contents = null, dependencies } = meta ?? {};
 
-  return { path, contents, dependencies: Array.isArray(dependencies) ? dependencies : [] };
+  return { contents, dependencies: Array.isArray(dependencies) ? dependencies : [] };
 }
 
-export async function collect<T>(input: string, { resolve, parse }: Options<T>): Promise<Map<string, GraphNode<T>>> {
-  const visited = new Set<string>();
-  const graph = new Map<string, GraphNode<T>>();
+export async function collect<T>(input: string, { resolve, parse }: Options<T>): Promise<GraphNode<T>> {
+  const graph = new Map<string, Partial<GraphNode<T>>>();
 
   const processFile: ProcessFile<T> = async path => {
-    if (!visited.has(path)) {
-      visited.add(path);
+    let node = graph.get(path);
 
-      // Read file and parse dependencies
-      const file = await readFile(path, parse);
+    // Check if node already exists
+    if (node == null) {
+      // Initialize node
+      node = { path };
 
-      // Get graph node
-      const node: GraphNode<T> = {
-        value: file,
-        children: await Promise.all(
-          file.dependencies.map(src => {
-            return resolve(src, path);
-          })
-        )
-      };
+      // Add node to graph
+      graph.set(path, node);
 
-      // Process children
-      await Promise.all(
-        node.children.map(path => {
-          return processFile(path);
+      // Parse file
+      const { contents, dependencies } = await parseFile(path, parse);
+
+      // Set node properties
+      node.contents = contents;
+      node.dependencies = dependencies;
+
+      // Resolve dependencies
+      node.children = await Promise.all(
+        dependencies.map(async src => {
+          return processFile(await resolve(src, path));
         })
       );
-
-      graph.set(path, node);
     }
 
-    return graph;
+    return node as GraphNode<T>;
   };
 
+  // Resolve input file
   const path = await resolve(input);
 
+  // Process file
   return processFile(path);
 }

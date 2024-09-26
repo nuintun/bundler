@@ -14,29 +14,26 @@ export interface Options<T> {
   oncycle?: OnCycle;
 }
 
-export interface GraphNode<T> {
-  value: File<T>;
-  children: string[];
-}
-
-export interface ParseOutput<T> {
+export interface ParsedMeta<T> {
   contents?: T;
   dependencies?: string[];
 }
 
-export interface VisitedNode<T> {
-  value: File<T>;
-  referrer?: VisitedNode<T>;
-  children: IterableIterator<string>;
+export interface ProcessFile<T> {
+  (path: string): Promise<GraphNode<T>>;
+}
+
+export interface GraphNode<T> extends File<T> {
+  children: GraphNode<T>[];
+}
+
+export interface Parse<T> {
+  (path: string): ParsedMeta<T> | void;
+  (path: string): Promise<ParsedMeta<T> | void>;
 }
 
 export interface OnCycle {
   (path: string, referrer: string): void | never;
-}
-
-export interface Parse<T> {
-  (path: string): ParseOutput<T> | void;
-  (path: string): Promise<ParseOutput<T> | void>;
 }
 
 export interface Resolve {
@@ -44,10 +41,4 @@ export interface Resolve {
   (src: string, referrer?: string): Promise<string>;
 }
 
-export interface ProcessFile<T> {
-  (path: string): Promise<Map<string, GraphNode<T>>>;
-}
-
-export interface VisitNode<T> {
-  (path: string, referrer?: VisitedNode<T>): VisitedNode<T> | void;
-}
+export type Current<T> = [iterator: IterableIterator<GraphNode<T>>, referrer?: GraphNode<T>];

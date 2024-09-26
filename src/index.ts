@@ -4,7 +4,7 @@
 
 import { collect } from './graph';
 import { assertOptions, isFunction } from './utils';
-import { File, Options, VisitNode } from './interface';
+import { Current, File, GraphNode, Options } from './interface';
 
 export { File, Options };
 
@@ -23,51 +23,57 @@ export default class Bundler<T> {
    */
   async parse(input: string): Promise<File<T>[]> {
     const { options } = this;
+    const { oncycle } = options;
     const output: File<T>[] = [];
+    const waiting: Current<T>[] = [];
+    const tracing = new Set<string>();
     const visited = new Set<string>();
-    const waiting = new Set<string>();
     const graph = await collect(input, options);
-    const oncycle = isFunction(options.oncycle) ? options.oncycle : null;
+    const onFileCycle = isFunction(oncycle) ? oncycle : null;
 
-    const visitNode: VisitNode<T> = (path, referrer) => {
-      visited.add(path);
+    const getFile = (node: GraphNode<T>): File<T> => {
+      const { path, contents, dependencies } = node;
 
-      oncycle && waiting.add(path);
-
-      const node = graph.get(path);
-
-      if (node != null) {
-        const { value, children } = node;
-
-        return {
-          value,
-          referrer,
-          children: children.values()
-        };
+      if (onFileCycle != null) {
+        tracing.delete(path);
       }
+
+      return { path, contents, dependencies };
     };
 
-    let current = visitNode(input);
+    let current: Current<T> | undefined = [[graph].values()];
 
-    while (current != null) {
-      const { done, value: path } = current.children.next();
+    while (current) {
+      const [iterator, parent] = current;
+      const { done, value: node } = iterator.next();
 
       if (done) {
-        const { path, contents, dependencies } = current.value;
+        current = waiting.pop();
 
-        oncycle && waiting.delete(path);
-
-        output.push({ path, contents, dependencies });
-
-        current = current.referrer;
+        if (parent != null) {
+          output.push(getFile(parent));
+        }
       } else {
+        const { path } = node;
+
         // Found circular dependency
-        if (oncycle && waiting.has(path)) {
-          oncycle(path, current.value.path);
+        if (parent != null && tracing.has(path)) {
+          onFileCycle?.(path, parent.path);
         }
 
         if (!visited.has(path)) {
-          current = visitNode(path, current);
+          tracing.add(path);
+          visited.add(path);
+
+          const { children } = node;
+
+          if (children.length > 0) {
+            waiting.push(current);
+
+            current = [children.values(), node];
+          } else {
+            output.push(getFile(node));
+          }
         }
       }
     }
