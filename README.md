@@ -1,8 +1,12 @@
 # bundler
 
+<!-- prettier-ignore -->
 > An async file dependency bundle parser
 >
-> [![NPM Version][npm-image]][npm-url] > [![Download Status][download-image]][npm-url] > ![Node Version][node-image] > [![License][license-image]][license-url]
+> [![NPM Version][npm-image]][npm-url]
+> [![Download Status][download-image]][npm-url]
+> ![Node Version][node-image]
+> [![License][license-image]][license-url]
 
 ### API
 
