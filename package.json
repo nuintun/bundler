@@ -1,6 +1,6 @@
 {
   "name": "@nuintun/bundler",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "description": "An async file dependency bundle parser.",
   "type": "module",
   "main": "cjs/index.cjs",
@@ -47,7 +47,7 @@
     "build:types": "tsc --declaration --emitDeclarationOnly --declarationDir types"
   },
   "dependencies": {
-    "tslib": "^2.8.0"
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.1",
