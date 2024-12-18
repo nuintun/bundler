@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "pretty": true,
     "strict": true,
     "newLine": "lf",
+    "jsx": "react-jsx",
     "module": "ESNext",
     "target": "ESNext",
     "skipLibCheck": true,
@@ -10,9 +12,9 @@
     "noUnusedLocals": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "noImplicitOverride": true,
     "noUnusedParameters": true,
     "moduleResolution": "bundler",
-    "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true
   },
   "include": [
