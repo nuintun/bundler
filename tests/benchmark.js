@@ -2,7 +2,7 @@
  * @module benchmark
  */
 
-import Bundler from '@nuintun/bundler';
+import { Bundler } from '@nuintun/bundler';
 
 const files = {};
 const length = 100000;

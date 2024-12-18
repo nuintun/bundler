@@ -2,7 +2,7 @@
  * @module bunder
  */
 
-import Bundler from '@nuintun/bundler';
+import { Bundler } from '@nuintun/bundler';
 
 const files = {
   '/src/1.js': { contents: 'file 1', dependencies: ['2.js', '4.js'] },
@@ -16,7 +16,7 @@ const files = {
   '/src/9.js': { contents: 'file 9', dependencies: ['/src/1.js'] }
 };
 
-// npm test allow-cycle
+// Npm test allow-cycle.
 const cycle = process.argv[2] === '--cycle';
 
 const oncycle = (path, referrer) => {

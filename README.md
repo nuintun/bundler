@@ -33,7 +33,7 @@
 ### Examples
 
 ```js
-const Bundler = require('@nuintun/bundler');
+import { Bundler } from '@nuintun/bundler';
 
 const files = {
   '/src/1.js': { contents: 'file 1', dependencies: ['2.js', '4.js'] },

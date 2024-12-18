@@ -1,17 +1,17 @@
 {
   "compilerOptions": {
-    "strict": true,
     "pretty": true,
+    "strict": true,
     "newLine": "lf",
-    "target": "ESNext",
     "module": "ESNext",
+    "target": "ESNext",
     "skipLibCheck": true,
     "importHelpers": true,
     "noUnusedLocals": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
     "noUnusedParameters": true,
+    "moduleResolution": "bundler",
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true
   },

@@ -6,9 +6,9 @@ import { collect } from './graph';
 import { assertOptions, isFunction } from './utils';
 import { Current, File, GraphNode, Options } from './interface';
 
-export { File, Options };
+export type { File, Options };
 
-export default class Bundler<T> {
+export class Bundler<T> {
   private readonly options: Options<T>;
 
   constructor(options: Options<T>) {

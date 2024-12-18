@@ -2,25 +2,32 @@
  * @module rollup.base
  */
 
-import { createRequire } from 'node:module';
 import treeShake from './plugins/tree-shake.js';
 import typescript from '@rollup/plugin-typescript';
+import { createRequire, isBuiltin } from 'node:module';
 
 const pkg = createRequire(import.meta.url)('../package.json');
 
+const externals = [
+  // Dependencies.
+  ...Object.keys(pkg.dependencies || {}),
+  // Peer dependencies.
+  ...Object.keys(pkg.peerDependencies || {})
+];
+
 const banner = `/**
-  * @package ${pkg.name}
-  * @license ${pkg.license}
-  * @version ${pkg.version}
-  * @author ${pkg.author.name} <${pkg.author.email}>
-  * @description ${pkg.description}
-  * @see ${pkg.homepage}
-  */
- `;
+ * @package ${pkg.name}
+ * @license ${pkg.license}
+ * @version ${pkg.version}
+ * @author ${pkg.author.name} <${pkg.author.email}>
+ * @description ${pkg.description}
+ * @see ${pkg.homepage}
+ */
+`;
 
 /**
  * @function rollup
- * @param {boolean} [esnext]
+ * @param {boolean} [esnext] Is esnext.
  * @return {import('rollup').RollupOptions}
  */
 export default function rollup(esnext) {
@@ -28,8 +35,6 @@ export default function rollup(esnext) {
     input: 'src/index.ts',
     output: {
       banner,
-      esModule: false,
-      exports: 'auto',
       interop: 'auto',
       preserveModules: true,
       dir: esnext ? 'esm' : 'cjs',
@@ -38,12 +43,30 @@ export default function rollup(esnext) {
       chunkFileNames: `[name].${esnext ? 'js' : 'cjs'}`,
       entryFileNames: `[name].${esnext ? 'js' : 'cjs'}`
     },
-    plugins: [typescript(), treeShake()],
+    plugins: [
+      typescript({
+        declaration: true,
+        declarationDir: esnext ? 'esm' : 'cjs'
+      }),
+      treeShake()
+    ],
     onwarn(error, warn) {
       if (error.code !== 'CIRCULAR_DEPENDENCY') {
         warn(error);
       }
     },
-    external: ['tslib']
+    external(source) {
+      if (isBuiltin(source)) {
+        return true;
+      }
+
+      for (const external of externals) {
+        if (source === external || source.startsWith(`${external}/`)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
   };
 }
