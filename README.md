@@ -130,4 +130,4 @@ parse('/src/1.js');
 [download-image]: https://img.shields.io/npm/dm/@nuintun/bundler?style=flat-square
 [npm-url]: https://www.npmjs.org/package/@nuintun/bundler
 [license-image]: https://img.shields.io/github/license/nuintun/bundler?style=flat-square
-[license-url]: https://github.com/nuintun/bundler/blob/master/LICENSE
+[license-url]: https://github.com/nuintun/bundler/blob/main/LICENSE
