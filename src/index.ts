@@ -19,7 +19,7 @@ export class Bundler<T> {
    * @public
    * @method parse
    * @param {string} input
-   * @description Get the list of dependent files of input file
+   * @description Get the list of dependent files of input file.
    */
   async parse(input: string): Promise<File<T>[]> {
     const { options } = this;
@@ -56,7 +56,7 @@ export class Bundler<T> {
       } else {
         const { path } = node;
 
-        // Found circular dependency
+        // Found circular dependency.
         if (parent != null && tracing.has(path)) {
           onFileCycle?.(path, parent.path);
         }

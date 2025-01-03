@@ -10,15 +10,15 @@ export function isFunction(value: unknown): value is Function {
 
 export function assertOptions<T>(options?: Options<T>): never | Options<T> {
   if (!options) {
-    throw new Error('The options is required');
+    throw new Error('the options is required');
   }
 
   const keys = ['resolve', 'parse'] as const;
 
   for (const key of keys) {
-    // Assert resolve and parse
+    // Assert resolve and parse.
     if (!isFunction(options[key])) {
-      throw new TypeError(`The options.${key} must be a function`);
+      throw new TypeError(`the options.${key} must be a function`);
     }
   }
 
