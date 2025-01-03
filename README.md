@@ -17,11 +17,13 @@
 > > found circularly dependency callback function
 >
 > options.resolve(path: string, referrer: string) => string
+>
 > options.resolve(path: string, referrer: string) => Promise<string>
 >
 > > path resolve function, support async function
 >
 > options.parse(path: string) => { contents?: T, dependencies?: string[] }
+>
 > options.parse(path: string) => Promise<{ contents?: T, dependencies?: string[] }>
 >
 > > file dependencies parse function, support async function
