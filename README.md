@@ -10,7 +10,7 @@
 
 ### API
 
-> #### new Bundler<T>(options: Options) => Bundler
+> #### new Bundler\<T\>(options: Options) => Bundler
 >
 > options?.oncycle: (path: string, referrer: string) => void
 >
