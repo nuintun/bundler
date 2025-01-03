@@ -48,14 +48,14 @@ const files = {
 };
 
 const bunder = new Bundler({
-  resolve: (path, referrer) => {
+  resolve(path, referrer) {
     if (/^\//.test(path)) return path;
 
     const dirname = referrer.replace(/\/[^\/]+$/, '');
 
     return `${dirname}/${path}`.replace(/(\.\/)+/g, '');
   },
-  parse: path => {
+  parse(path) {
     return new Promise(resolve => {
       const delay = 20;
 
