@@ -8,31 +8,77 @@
 > ![Node Version][node-image]
 > [![License][license-image]][license-url]
 
+### interface
+
+```ts
+interface ParsedMeta<T> {
+  contents?: T;
+  dependencies?: string[];
+}
+
+interface Parse<T> {
+  (path: string): ParsedMeta<T> | void;
+  (path: string): Promise<ParsedMeta<T> | void>;
+}
+
+interface OnCycle {
+  (path: string, referrer: string): void | never;
+}
+
+interface Resolve {
+  (src: string, referrer?: string): string;
+  (src: string, referrer?: string): Promise<string>;
+}
+
+export interface File<T> {
+  path: string;
+  contents: T | null;
+  dependencies: string[];
+}
+
+export interface Options<T> {
+  parse: Parse<T>;
+  resolve: Resolve;
+  oncycle?: OnCycle;
+}
+
+export declare class Bundler<T> {
+  constructor(options: Options<T>);
+  /**
+   * @public
+   * @method parse
+   * @param {string} input
+   * @description Get the list of dependent files of input file.
+   */
+  parse(input: string): Promise<File<T>[]>;
+}
+```
+
 ### API
 
-> #### new Bundler\<T\>(options: Options) => Bundler
+> #### new Bundler\<T\>(options: Options) => Bundler\<T\>
 >
 > options?.oncycle: (path: string, referrer: string) => void
 >
-> > found circularly dependency callback function
+> - found circularly dependency callback function
 >
 > options.resolve(path: string, referrer: string) => string
 >
 > options.resolve(path: string, referrer: string) => Promise<string>
 >
-> > path resolve function, support async function
+> - path resolve function, support async function
 >
 > options.parse(path: string) => { contents?: T, dependencies?: string[] }
 >
 > options.parse(path: string) => Promise<{ contents?: T, dependencies?: string[] }>
 >
-> > file dependencies parse function, support async function
+> - file dependencies parse function, support async function
 >
 > #### new Bundler(options: Options).parse(input: string) => Promise<File[]\>
 >
 > input: string
 >
-> > path of input file
+> - path of input file
 
 ### Examples
 
