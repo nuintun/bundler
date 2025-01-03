@@ -64,17 +64,17 @@ export declare class Bundler<T> {
 >
 > options.resolve(path: string, referrer: string) => string
 >
-> options.resolve(path: string, referrer: string) => Promise<string>
+> options.resolve(path: string, referrer: string) => Promise\<string\>
 >
 > - path resolve function, support async function
 >
 > options.parse(path: string) => { contents?: T, dependencies?: string[] }
 >
-> options.parse(path: string) => Promise<{ contents?: T, dependencies?: string[] }>
+> options.parse(path: string) => Promise\<{ contents?: T, dependencies?: string[] }\>
 >
 > - file dependencies parse function, support async function
 >
-> #### new Bundler(options: Options).parse(input: string) => Promise<File[]\>
+> #### new Bundler(options: Options).parse(input: string) => Promise\<File[]\>
 >
 > input: string
 >
