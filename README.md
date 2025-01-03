@@ -10,18 +10,19 @@
 
 ### API
 
-> #### new Bundler(options: Options) => Bundler
+> #### new Bundler<T>(options: Options) => Bundler
 >
 > options?.oncycle: (path: string, referrer: string) => void
 >
 > > found circularly dependency callback function
 >
-> options.resolve(path: string, referrer: string) => string | Promise<string>
+> options.resolve(path: string, referrer: string) => string
+> options.resolve(path: string, referrer: string) => Promise<string>
 >
 > > path resolve function, support async function
 >
-> options.parse(path: string) => { contents?: any, dependencies?: string[] }
-> | Promise<{ contents?: any, dependencies?: string[] }>
+> options.parse(path: string) => { contents?: T, dependencies?: string[] }
+> options.parse(path: string) => Promise<{ contents?: T, dependencies?: string[] }>
 >
 > > file dependencies parse function, support async function
 >
