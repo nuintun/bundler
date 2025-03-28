@@ -1,6 +1,6 @@
 {
   "name": "@nuintun/bundler",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "An async file dependency bundle parser.",
   "type": "module",
   "main": "cjs/index.cjs",
@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
-    "dts-paths": "^1.1.4",
+    "dts-paths": "^1.1.5",
     "magic-string": "^0.30.17",
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
