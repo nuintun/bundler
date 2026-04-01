@@ -27,18 +27,16 @@ export interface GraphNode<T> extends File<T> {
   children: GraphNode<T>[];
 }
 
-export interface Parse<T> {
-  (path: string): ParsedMeta<T> | void;
-  (path: string): Promise<ParsedMeta<T> | void>;
-}
-
 export interface OnCycle {
   (path: string, referrer: string): void | never;
 }
 
 export interface Resolve {
-  (src: string, referrer?: string): string;
-  (src: string, referrer?: string): Promise<string>;
+  (src: string, referrer?: string): string | Promise<string>;
+}
+
+export interface Parse<T> {
+  (path: string): ParsedMeta<T> | Promise<ParsedMeta<T> | void> | void;
 }
 
 export type Current<T> = [iterator: IterableIterator<GraphNode<T>>, referrer?: GraphNode<T>];

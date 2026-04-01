@@ -4,8 +4,13 @@
 
 import { Bundler } from '@nuintun/bundler';
 
-const files = {};
+interface File {
+  contents: string;
+  dependencies: string[];
+}
+
 const length = 100000;
+const files: Record<string, File> = {};
 
 for (let i = 1; i < length; i++) {
   const path = `/src/${i}.js`;
@@ -15,7 +20,7 @@ for (let i = 1; i < length; i++) {
   files[path] = { dependencies, contents };
 }
 
-async function parse(input) {
+async function parse(input: string) {
   console.time('Bundler');
 
   const bunder = new Bundler({

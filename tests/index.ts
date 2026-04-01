@@ -4,7 +4,12 @@
 
 import { Bundler } from '@nuintun/bundler';
 
-const files = {
+interface File {
+  contents: string;
+  dependencies: string[];
+}
+
+const files: Record<string, File> = {
   '/src/1.js': { contents: 'file 1', dependencies: ['2.js', '4.js'] },
   '/src/2.js': { contents: 'file 2', dependencies: ['./3.js', './5.js'] },
   '/src/3.js': { contents: 'file 3', dependencies: ['/src/4.js', '/src/6.js'] },
@@ -19,22 +24,22 @@ const files = {
 // Npm test allow-cycle.
 const cycle = process.argv[2] === '--cycle';
 
-const oncycle = (path, referrer) => {
+const oncycle = (path: string, referrer: string) => {
   throw new ReferenceError(`Found circular dependency ${path} in ${referrer}`);
 };
 
-function getRandom(min, max, fixed = 0) {
+function getRandom(min: number, max: number, fixed = 0) {
   const differ = max - min;
   const random = Math.random();
 
   return +(min + differ * random).toFixed(fixed);
 }
 
-async function parse(input) {
+async function parse(input: string) {
   console.time('Bundler');
 
   const bunder = new Bundler({
-    oncycle: cycle ? null : oncycle,
+    oncycle: cycle ? void 0 : oncycle,
     resolve: async (path, referrer) => {
       if (referrer != null) {
         if (/^\//.test(path)) return path;
@@ -47,7 +52,7 @@ async function parse(input) {
       return path;
     },
     parse: path => {
-      return new Promise(resolve => {
+      return new Promise<File>(resolve => {
         const delay = getRandom(10, 100);
 
         setTimeout(() => resolve(files[path]), delay);
