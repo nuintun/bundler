@@ -11,7 +11,10 @@ async function parseFile<T>(path: string, parse: Parse<T>): Promise<Omit<File<T>
   return { contents, dependencies: Array.isArray(dependencies) ? dependencies : [] };
 }
 
-export async function collect<T>(input: string, { resolve, parse }: Options<T>): Promise<GraphNode<T>> {
+export async function collect<T>(
+  input: string,
+  { resolve, parse }: Options<T>
+): Promise<GraphNode<T>> {
   // Resolve input file.
   const path = await resolve(input);
 

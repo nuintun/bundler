@@ -14,8 +14,18 @@ const files: Record<string, File> = {};
 
 for (let i = 1; i < length; i++) {
   const path = `/src/${i}.js`;
+  const dependencies =
+    i < length - 3
+      ? [
+          // dependencies 1
+          `/src/${i + 1}.js`,
+          // dependencies 2
+          `/src/${i + 2}.js`,
+          // dependencies 3
+          `/src/${i + 3}.js`
+        ]
+      : [];
   const contents = `${path} contents`;
-  const dependencies = i < length - 3 ? [`/src/${i + 1}.js`, `/src/${i + 2}.js`, `/src/${i + 3}.js`] : [];
 
   files[path] = { dependencies, contents };
 }
